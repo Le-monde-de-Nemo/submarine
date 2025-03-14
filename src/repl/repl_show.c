@@ -9,11 +9,14 @@ struct repl_entry repl_entry_show = {
 
 int repl_show_match(int argc, char* argv[])
 {
-    return strcmp("show", argv[0]) == 0;
+    return  argc > 1 &&
+            strcmp("show", argv[0]) == 0 &&
+            strcmp("aquarium", argv[1]) == 0;
 }
 
-void repl_show_exec(int argc, char* argv[])
+enum _repl_cmd repl_show_exec(int argc, char* argv[])
 {
-    printf("exec show\n");
+    printf("exec show aquarium\n");
     // Exec show or print error if wrong argv
+    return ok;
 }

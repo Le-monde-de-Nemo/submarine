@@ -7,12 +7,17 @@
 struct repl_entry {
     // Returns non-zero if the entry match argv, zero otherwize
     int (*match)(int argc, char* argv[]);
-    void (*exec)(int argc, char* argv[]);
+    enum _repl_cmd (*exec)(int argc, char* argv[]);
 };
 
 struct repl {
     struct repl_entry* repls;
     size_t replc;
+};
+
+// Returned by exec, used to send message or errors to repl
+enum _repl_cmd {
+    ok, quit
 };
 
 /*
