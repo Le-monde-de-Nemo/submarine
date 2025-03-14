@@ -38,7 +38,7 @@ struct Fish* fish__setType(const enum Species specie, struct Fish* fish)
 
 // --------------------------------------------------------------------------
 
-struct vec2  fish__getPos(const struct Fish* fish)
+struct vec2 fish__getPos(const struct Fish* fish)
 {
     // TODO
     return vec2__zeros();
