@@ -12,8 +12,9 @@ int repl_show_match(int argc, char* argv[])
     return strcmp("show", argv[0]) == 0;
 }
 
-void repl_show_exec(int argc, char* argv[])
+enum _repl_cmd repl_show_exec(int argc, char* argv[])
 {
     printf("exec show\n");
     // Exec show or print error if wrong argv
+    return ok;
 }

@@ -12,8 +12,9 @@ int repl_add_view_match(int argc, char* argv[])
     return argc > 1 && strcmp("add", argv[0]) == 0 && strcmp("view", argv[1]) == 0;
 }
 
-void repl_add_view_exec(int argc, char* argv[])
+enum _repl_cmd repl_add_view_exec(int argc, char* argv[])
 {
     printf("exec add_view\n");
     // Exec add_view or print error if wrong argv
+    return ok;
 }

@@ -97,12 +97,21 @@ int repl__run(struct repl repl)
         argc = parse_argv(input, argv);
 
         int matched = 0;
+        enum _repl_cmd repl_cmd;
         for (int i = 0; i < repl.replc; ++i) {
             struct repl_entry entry = repl.repls[i];
 
             if (entry.match(argc, argv)) {
                 matched = 1;
-                entry.exec(argc, argv);
+                repl_cmd = entry.exec(argc, argv);
+
+                switch (repl_cmd) {
+                    case quit:
+                        c = 0;
+                        break;
+                    default:;
+                }
+
                 break;
             }
         }

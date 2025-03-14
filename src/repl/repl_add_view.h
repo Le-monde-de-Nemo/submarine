@@ -7,5 +7,5 @@ extern struct repl_entry repl_entry_add_view;
 
 int repl_add_view_match(int argc, char* argv[]);
 
-void repl_add_view_exec(int argc, char* argv[]);
+enum _repl_cmd repl_add_view_exec(int argc, char* argv[]);
 #endif
