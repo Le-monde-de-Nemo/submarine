@@ -5,12 +5,12 @@
  */
 struct vec2 vec2__create(int x, int y)
 {
-  struct vec2 vec = {
-    .x = x,
-    .y = y
-  };
+    struct vec2 vec = {
+        .x = x,
+        .y = y
+    };
 
-  return vec;
+    return vec;
 }
 
 /*
@@ -18,9 +18,9 @@ struct vec2 vec2__create(int x, int y)
  */
 struct vec2 vec2__zeros()
 {
-  struct vec2 zeros = {0, 0};
+    struct vec2 zeros = { 0, 0 };
 
-  return zeros;
+    return zeros;
 }
 
 /*
@@ -28,9 +28,9 @@ struct vec2 vec2__zeros()
  */
 struct vec2 vec2__ones()
 {
-  struct vec2 zeros = {1, 1};
+    struct vec2 zeros = { 1, 1 };
 
-  return zeros;
+    return zeros;
 }
 
 /*
@@ -39,12 +39,12 @@ struct vec2 vec2__ones()
  */
 struct vec2 vec2__add(struct vec2 u, struct vec2 v)
 {
-  struct vec2 added = {
-    .x = u.x + v.x,
-    .y = u.y + v.y
-  };
+    struct vec2 added = {
+        .x = u.x + v.x,
+        .y = u.y + v.y
+    };
 
-  return added;
+    return added;
 }
 
 /*
@@ -53,12 +53,12 @@ struct vec2 vec2__add(struct vec2 u, struct vec2 v)
  */
 struct vec2 vec2__sub(struct vec2 u, struct vec2 v)
 {
-  struct vec2 sub = {
-    .x = u.x - v.x,
-    .y = u.y - v.y
-  };
+    struct vec2 sub = {
+        .x = u.x - v.x,
+        .y = u.y - v.y
+    };
 
-  return sub;
+    return sub;
 }
 
 /*
@@ -67,10 +67,10 @@ struct vec2 vec2__sub(struct vec2 u, struct vec2 v)
  */
 struct vec2 vec2__rmul(int r, struct vec2 u)
 {
-  struct vec2 rmuld = {
-    .x = r * u.x,
-    .y = r * u.y
-  };
+    struct vec2 rmuld = {
+        .x = r * u.x,
+        .y = r * u.y
+    };
 
-  return rmuld;
+    return rmuld;
 }

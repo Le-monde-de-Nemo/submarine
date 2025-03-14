@@ -4,7 +4,7 @@ src_dir?=src
 src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/)))
 includes=$(patsubst %,-I%,${src_dirs})
 CFLAGS+=-g -O0 -std=c99 ${includes}
-LDFLAGS+=
+LDFLAGS+=-fsanitize=address
 
 srcs+=$(wildcard ${src_dir}/*.c ${src_dir}/**/*.c)
 objs+=$(patsubst ${src_dir}/%.c,${build_dir}/%.o,${srcs})
@@ -25,6 +25,10 @@ ${build_dir}/%.o: ${src_dir}/%.c
 .PHONY: compile_flags.txt
 compile_flags.txt:
 	(echo "${CFLAGS} ${LDFLAGS}" | sed 's/ /\n/g') > compile_flags.txt
+
+.PHONY: format
+format:
+	clang-format -i ${srcs}
 
 .PHONY: clean
 clean:
