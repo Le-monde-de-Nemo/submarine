@@ -106,10 +106,10 @@ int repl__run(struct repl repl)
                 repl_cmd = entry.exec(argc, argv);
 
                 switch (repl_cmd) {
-                    case quit:
-                        c = 0;
-                        break;
-                    default:;
+                case quit:
+                    c = 0;
+                    break;
+                default:;
                 }
 
                 break;

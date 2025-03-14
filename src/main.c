@@ -1,10 +1,11 @@
 #include "repl.h"
 #include "repl_add_view.h"
 #include "repl_del_view.h"
+#include "repl_help.h"
 #include "repl_load.h"
+#include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
-#include "repl_help.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,6 +16,7 @@ int main(int argc, char* argv[])
         repl_entry_add_view,
         repl_entry_del_view,
         repl_entry_help,
+        repl_entry_quit,
     };
 
     int n = sizeof(entries) / sizeof(struct repl_entry);
