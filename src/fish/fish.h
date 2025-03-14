@@ -33,8 +33,8 @@
     // By default, the type of the fish is COMMON.
     // ----------------------------------------------------------------------
 
-    enum Species fish__getType(struct Fish fish);
-    enum Species fish__setType(struct Fish fish);
+    enum Species fish__getType(const struct Fish* fish);
+    enum Species fish__setType(struct Fish* fish);
 
     // ----------------------------------------------------------------------
     // Remove the allocated area from a fish creation.
