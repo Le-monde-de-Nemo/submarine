@@ -59,11 +59,6 @@ int repl__run()
     // Add 1 to argc to take the last element in account
     argc += (k > 0);
 
-    printf("argc=%d\n", argc);
-    for (int i = 0 ; i < argc ; ++i)
-      printf("%s ", argv[i]);
-    printf("\n");
-
     if (strcmp("show", argv[0]) == 0)
     {
     }
