@@ -22,11 +22,10 @@ ${build_dir}/%.o: ${src_dir}/%.c
 	@mkdir -p $(dir $@)
 	${CC} -c -o $@ $^ ${CFLAGS}
 
-test:
-	# ${src_dir}
-	# ${srcs}
-	# ${objs}
-	# ${include}
+.PHONY: compile_flags.txt
+compile_flags.txt:
+	(echo "${CFLAGS} ${LDFLAGS}" | sed 's/ /\n/g') > compile_flags.txt
 
+.PHONY: clean
 clean:
 	${RM} -rf build controller
