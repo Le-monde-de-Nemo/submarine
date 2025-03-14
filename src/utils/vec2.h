@@ -24,17 +24,17 @@ struct vec2 vec2__ones();
  *  Add v to u
  *  Returns u + v
  */
-struct vec2 vec2__add(vec2 u, vec2 v);
+struct vec2 vec2__add(struct vec2 u, struct vec2 v);
 
 /*
  *  Substract v to u
  *  Returns u - v
  */
-struct vec2 vec2__sub(vec2 u, vec2 v);
+struct vec2 vec2__sub(struct vec2 u, struct vec2 v);
 
 /*
  *  Multiply u by r
  *  Returns (r * x, r * y)
  */
-struct vec2 vec2__rmul(int r, vec2 u);
+struct vec2 vec2__rmul(int r, struct vec2 u);
 #endif
