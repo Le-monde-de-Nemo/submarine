@@ -17,7 +17,8 @@ struct repl {
 
 // Returned by exec, used to send message or errors to repl
 enum _repl_cmd {
-    ok, quit
+    ok,
+    quit
 };
 
 /*

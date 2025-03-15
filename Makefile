@@ -7,6 +7,7 @@ CFLAGS+=-g -O0 ${includes}
 LDFLAGS+=-fsanitize=address
 
 srcs+=$(wildcard ${src_dir}/*.c ${src_dir}/**/*.c)
+headers+=$(wildcard ${src_dir}/*.h ${src_dir}/**/*.h)
 objs+=$(patsubst ${src_dir}/%.c,${build_dir}/%.o,${srcs})
 
 .PHONY: all
@@ -28,7 +29,11 @@ compile_flags.txt:
 
 .PHONY: format
 format:
-	clang-format -i ${srcs}
+	clang-format -i ${srcs} ${headers}
+
+.PHONY: check_format
+check_format:
+	clang-format --dry-run --Werror ${srcs} ${headers}
 
 .PHONY: clean
 clean:

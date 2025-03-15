@@ -1,8 +1,8 @@
 #ifndef _VEC2_H_
 #define _VEC2_H_
 struct vec2 {
-  int x;
-  int y;
+    int x;
+    int y;
 };
 
 /*
