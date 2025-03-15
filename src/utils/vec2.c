@@ -1,4 +1,5 @@
 #include "vec2.h"
+#include <stdio.h>
 
 /*
  *  Returns the vector (x, y)
@@ -73,4 +74,13 @@ struct vec2 vec2__rmul(int r, struct vec2 u)
     };
 
     return rmuld;
+}
+
+/*
+ *  Write at most n chars to dst to display vec
+ */
+char* vec2__disp(struct vec2 u, char* dst, long n)
+{
+    snprintf(dst, n, "(%d, %d)", u.x, u.y);
+    return dst;
 }

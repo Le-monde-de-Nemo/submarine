@@ -37,4 +37,10 @@ struct vec2 vec2__sub(struct vec2 u, struct vec2 v);
  *  Returns (r * x, r * y)
  */
 struct vec2 vec2__rmul(int r, struct vec2 u);
+
+/*
+ *  Write at most n chars to dst to display vec
+ *  Returns dst
+ */
+char* vec2__disp(struct vec2 u, char* dst, long n);
 #endif
