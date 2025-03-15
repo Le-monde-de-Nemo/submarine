@@ -9,9 +9,7 @@ struct repl_entry repl_entry_show = {
 
 int repl_show_match(int argc, char* argv[])
 {
-    return  argc > 1 &&
-            strcmp("show", argv[0]) == 0 &&
-            strcmp("aquarium", argv[1]) == 0;
+    return argc > 1 && strcmp("show", argv[0]) == 0 && strcmp("aquarium", argv[1]) == 0;
 }
 
 enum _repl_cmd repl_show_exec(int argc, char* argv[])

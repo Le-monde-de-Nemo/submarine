@@ -1,5 +1,6 @@
 #include "repl.h"
 #include <assert.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +8,15 @@
 
 // Should be plenty of space for what's needed
 #define SSCANF_FORMAT_SIZE 128
+
+// is set to non-zero by signal on unexpectd behaviour (like SIGINT)
+static int interrupted = 0;
+
+void interrupt_handler(int signum)
+{
+    interrupted = 1;
+    fprintf(stderr, "recieved  SIGINT\n");
+}
 
 struct repl repl__create(struct repl_entry* repl_entries, size_t n)
 {
@@ -65,11 +75,10 @@ void free_argv(char** argv)
 
 int repl__run(struct repl repl)
 {
-    // is set to 0 on exit
+    // Is set to 0 on exit
     int c = 1;
 
-    char sscanf_format[SSCANF_FORMAT_SIZE];
-
+    // Buffers
     char input[REPL_BUF_SIZE] = {};
     char* argv[REPL_BUF_SIZE] = {};
     for (int i = 0; i < REPL_BUF_SIZE; ++i) {
@@ -82,13 +91,26 @@ int repl__run(struct repl repl)
     int k = 0; // Index to iterate in argv[argc]
     int in_len;
 
+    // SIGINT handling
+    struct sigaction sa, sa_old = {};
+    sigset_t set;
+
+    sigfillset(&set);
+    sigdelset(&set, SIGINT);
+
+    sa.sa_handler = interrupt_handler;
+    sa.sa_flags = SA_NODEFER;
+    sigfillset(&sa.sa_mask);
+
+    sigaction(SIGINT, &sa, &sa_old);
+
     while (c) {
         reset_argv(argc, argv);
 
         // Get raw input
         printf("> ");
         char* res = fgets(input, REPL_BUF_SIZE, stdin);
-        if (res == NULL) {
+        if (res == NULL || interrupted) {
             fprintf(stderr, "Found EOF while reading input, exiting...\n");
             free_argv(argv);
             return EOF;

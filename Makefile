@@ -3,7 +3,7 @@ src_dir?=src
 
 src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/)))
 includes=$(patsubst %,-I%,${src_dirs})
-CFLAGS+=-g -O0 -std=c99 ${includes}
+CFLAGS+=-g -O0 ${includes}
 LDFLAGS+=-fsanitize=address
 
 srcs+=$(wildcard ${src_dir}/*.c ${src_dir}/**/*.c)
