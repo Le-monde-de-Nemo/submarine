@@ -6,9 +6,19 @@
 #include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
+#include <pthread.h>
+#include <stdio.h>
+#include <unistd.h>
+
+static int exited = 0;
+
+void* master(void* args);
 
 int main(int argc, char* argv[])
 {
+    pthread_t master_thread;
+    pthread_create(&master_thread, NULL, master, NULL);
+
     struct repl_entry entries[] = {
         repl_entry_load,
         repl_entry_save,
@@ -23,8 +33,21 @@ int main(int argc, char* argv[])
     struct repl repl = repl__create(entries, n);
 
     repl__run(repl);
+    exited = 1;
+    pthread_join(master_thread, NULL);
 
     repl__finalize(repl);
 
     return 0;
+}
+
+void* master(void* args)
+{
+    while (!exited) {
+        fprintf(stderr, "salut je suis le maître !!\n");
+        sleep(2);
+    }
+
+    fprintf(stderr, "exited!\n");
+    return NULL;
 }
