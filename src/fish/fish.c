@@ -13,9 +13,9 @@
 
 // ----------------------------------------------------------------------
 
-//static char* species_name[] = {
-    //"PoissonRouge",
-    //"PoissonClown",
+// static char* species_name[] = {
+//"PoissonRouge",
+//"PoissonClown",
 //};
 
 char* specie__disp(enum species specie)
@@ -24,7 +24,7 @@ char* specie__disp(enum species specie)
         return "BasicFish";
     }
 
-    //TODO
+    // TODO
     return NULL;
 }
 

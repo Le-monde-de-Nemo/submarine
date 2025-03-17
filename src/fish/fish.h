@@ -23,7 +23,7 @@ enum species {
  *      POISSON_ROUGE --> "PoissonRouge";
  *      POISSON_CLOWN --> "PoissonClown";
  *      COMMON        --> "BasicFish";
-*/
+ */
 char* specie__disp(enum species specie);
 
 // ----------------------------------------------------------------------
@@ -32,8 +32,8 @@ struct fish_t {
     enum species specie;
     struct vec2 current_pos; // get_pos | set_pos
     struct vec2 target_pos; // get_target_pos | set_target_pos
-    //int time_duration; // in seconds.
-    //int fish_speed; // in `meter/seconds`.
+    // int time_duration; // in seconds.
+    // int fish_speed; // in `meter/seconds`.
 };
 
 // ----------------------------------------------------------------------
