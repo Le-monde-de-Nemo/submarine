@@ -1,0 +1,104 @@
+// --------------------------------------------------------------------------
+// The implementation of the vue structure.
+//      See `/src/vue/vue.h`.
+//      Dependencies:
+//              - `vec2.h` for the coordinates, and sizes.
+//              - `figure.h` for the id, the pos and the size of a fish.
+//
+//      The structure contains:
+//          - a fig, which is the id, the pos and the size of the vue.
+//              See `src/figure/figure.h`
+// --------------------------------------------------------------------------
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "figure.h"
+#include "vec2.h"
+#include "vue.h"
+
+// --------------------------------------------------------------------------
+// Create a vue.
+//  By default:
+//      id         = 0.
+//      pos        = (0, 0). See `src/figure/figure.h`
+//      size       = (1, 1). See `src/figure/figure.h`
+//
+//      The pos is actually a `vec2`. See `src/utils/vec2.h`.
+// --------------------------------------------------------------------------
+
+struct vue_t
+vue__init_vue(int id, struct vec2 pos, struct vec2 size)
+{
+    struct figure_t fig = {
+        .id = id,
+        .coordinates = pos,
+        .size = size
+    };
+
+    struct vue_t vue = {
+        .fig = fig
+    };
+
+    return vue;
+}
+
+// ----------------------------------------------------------------------
+
+int vue__get_id(const struct vue_t* ptr_vue)
+{
+    // TODO
+    return 0;
+}
+
+// ----------------------------------------------------------------------
+// To access to the position of the vue.
+//      By default, the vue is at (0, 0).
+//      You can set the vue everywhere.
+//          it does not verify if the coordinates are in the aquarium.
+// ----------------------------------------------------------------------
+
+struct vec2 vue__get_current_pos(const struct vue_t* vue)
+{
+    // TODO
+    return vec2__zeros();
+}
+
+struct vue_t*
+vue__set_current_pos(const struct vec2 pos, struct vue_t* vue)
+{
+    // TODO
+    return vue;
+}
+
+// ----------------------------------------------------------------------
+// To access to the size of the vue.
+//      By default, the vue is size (1, 1).
+// ----------------------------------------------------------------------
+
+struct vec2 vue__get_width_height(const struct vue_t* vue)
+{
+    // TODO
+    return vec2__ones();
+}
+
+struct vue_t*
+vue__vue__set_width_height(const struct vec2 pos, struct vue_t* vue)
+{
+    // TODO
+    return vue;
+}
+
+// ----------------------------------------------------------------------
+// Remove the allocated area from a fish creation.
+//      The fish is allocated on the stack.
+//      It returns 0 if it has been done with error.
+// ----------------------------------------------------------------------
+
+int vue__destroy_vue(struct vue_t* ptr_vue)
+{
+    // TODO
+    return 1;
+}
+
+// ----------------------------------------------------------------------
