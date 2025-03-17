@@ -2,12 +2,14 @@
 #define __FISH__H__
 
 #include "vec2.h"
+#include "figure.h"
 
 // ----------------------------------------------------------------------
 // The header of the fish.
 //      See `src/fish/fish.c`.
 //      Dependencies:
 //              - `figure.h` for the id, coordinates, and size.
+//              - `vec2.h` for the coordinates.
 // ----------------------------------------------------------------------
 
 enum species {
@@ -27,8 +29,16 @@ char* specie__disp(enum species specie);
 
 // ----------------------------------------------------------------------
 
-/* see `src/fish/fish.c` for more details! */
-struct fish_t;
+/* It could be a good idea to put this struct in `src/fish/fish.c`.
+ * However, we want to allocate the fishes on the stack.
+ * If we put the struct in `src/fish/fish.c` we will need to use malloc.
+*/
+struct fish_t {
+    enum species specie;
+    int is_started; // 0 means not, 1 or other things mean yes.
+    struct figure_t fig;
+    //void* (*mobility_function)(void*);
+};
 
 // ----------------------------------------------------------------------
 // Create a fish.

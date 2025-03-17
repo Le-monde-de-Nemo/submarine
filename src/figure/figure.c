@@ -6,13 +6,8 @@
 //      - `size` using a vec2 such as { width(x), height(y) }.
 // ----------------------------------------------------------------------
 
+#include "figure.h"
 #include "vec2.h"
-
-struct figure_t {
-    int id; // unique identifier
-    struct vec2 coordinates; // { x, y }
-    struct vec2 size; // { width(x), height(y) }
-};
 
 // --------------------------------------------------------------------------
 

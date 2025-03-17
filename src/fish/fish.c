@@ -20,13 +20,6 @@
 #include "figure.h"
 #include "vec2.h"
 
-struct fish_t {
-    enum species specie;
-    int is_started; // 0 means not, 1 or other things means yes.
-    struct figure_t* fig;
-    //void* (*mobility_function)(void*);
-};
-
 // ----------------------------------------------------------------------
 
 // static char* species_name[] = {
@@ -53,8 +46,7 @@ fish__init_fish(int id, int is_started, enum species specie,
     struct fish_t fish = {
         .specie = specie,
         .is_started = is_started,
-        //.fig = figure__init_figure(id, pos, size),
-        .fig = NULL,
+        .fig = figure__init_figure(id, pos, size),
         //.mobility_function = NULL
     };
 

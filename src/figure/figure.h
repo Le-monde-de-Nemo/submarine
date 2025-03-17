@@ -10,8 +10,15 @@
 
 #include "vec2.h"
 
-/* see `src/figure/figure.c` for more details! */
-struct figure_t;
+/* It could be a good idea to put this struct in `src/figure/figure.c`.
+ * However, we want to allocate the fishes on the stack.
+ * If we put the struct in `figure.c` we will need to use malloc.
+*/
+struct figure_t {
+    int id; // unique identifier
+    struct vec2 coordinates; // { x, y }
+    struct vec2 size; // { width(x), height(y) }
+};
 
 // --------------------------------------------------------------------------
 // Create a figure.
