@@ -25,11 +25,9 @@ enum mobility_functions {
 //      If the name is not recognized, then the "RandomWayPoint" is used.
 // ----------------------------------------------------------------------
 
-void
-get_mobility_function_duration(const char* name, int (*ptr_func)());
-void
-get_mobility_function_target_pos(const char* name,
-                                 struct vec2 (*ptr_func)());
+void get_mobility_function_duration(const char* name, int (*ptr_func)());
+void get_mobility_function_target_pos(const char* name,
+    struct vec2 (*ptr_func)());
 
 // ----------------------------------------------------------------------
 // Mobility Function

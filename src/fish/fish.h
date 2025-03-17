@@ -1,8 +1,8 @@
 #ifndef __FISH__H__
 #define __FISH__H__
 
-#include "vec2.h"
 #include "figure.h"
+#include "vec2.h"
 
 // ----------------------------------------------------------------------
 // The header of the fish.
@@ -32,7 +32,7 @@ char* specie__disp(enum species specie);
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
  * However, we want to allocate the fishes on the stack.
  * If we put the struct in `src/fish/fish.c` we will need to use malloc.
-*/
+ */
 struct fish_t {
     enum species specie;
     int is_started; // 0 means not, 1 or other things mean yes.
@@ -59,8 +59,8 @@ struct fish_t {
 
 struct fish_t
 fish__init_fish(enum species specie,
-                int id, struct vec2 pos, struct vec2 size,
-                const char* mobility_func);
+    int id, struct vec2 pos, struct vec2 size,
+    const char* mobility_func);
 
 // ----------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ int fish__get_id(const struct fish_t* ptr_fish);
  *  "DirectWayPoint";
  *
  *  See `src/mobility/mobility.h`.
-*/
+ */
 const char* fish__get_mobility_func(const struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------

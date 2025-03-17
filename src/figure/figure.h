@@ -13,7 +13,7 @@
 /* It could be a good idea to put this struct in `src/figure/figure.c`.
  * However, we want to allocate the fishes on the stack.
  * If we put the struct in `figure.c` we will need to use malloc.
-*/
+ */
 struct figure_t {
     int id; // unique identifier
     struct vec2 coordinates; // { x, y }
@@ -57,7 +57,7 @@ figure__set_current_pos(const struct vec2 pos, const struct figure_t* ptr_fig);
 struct vec2 figure__get_width_height(const struct figure_t* ptr_fig);
 struct figure_t
 figure__set_width_height(const struct vec2 size,
-        const struct figure_t* ptr_fig);
+    const struct figure_t* ptr_fig);
 
 // --------------------------------------------------------------------------
 // Remove the allocated area from a figure creation.

@@ -32,7 +32,6 @@ int figure__get_id(const struct figure_t* ptr_fig)
 
 // --------------------------------------------------------------------------
 
-
 struct vec2 figure__get_current_pos(const struct figure_t* ptr_fig)
 {
     // TODO
@@ -56,7 +55,7 @@ struct vec2 figure__get_width_height(const struct figure_t* ptr_fig)
 
 struct figure_t
 figure__set_width_height(const struct vec2 size,
-        const struct figure_t* ptr_fig)
+    const struct figure_t* ptr_fig)
 {
     // TODO
     return *ptr_fig;
@@ -71,4 +70,3 @@ int figure__destroy_figure(struct figure_t* ptr_fig)
 }
 
 // --------------------------------------------------------------------------
-

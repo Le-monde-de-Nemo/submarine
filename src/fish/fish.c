@@ -27,10 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fish.h"
 #include "figure.h"
-#include "vec2.h"
+#include "fish.h"
 #include "mobility.h"
+#include "vec2.h"
 
 // ----------------------------------------------------------------------
 
@@ -53,8 +53,8 @@ char* specie__disp(enum species specie)
 
 struct fish_t
 fish__init_fish(enum species specie,
-                int id, struct vec2 pos, struct vec2 size,
-                const char* mobility_func)
+    int id, struct vec2 pos, struct vec2 size,
+    const char* mobility_func)
 {
     struct fish_t fish = {
         .specie = specie,
@@ -64,9 +64,9 @@ fish__init_fish(enum species specie,
     };
 
     get_mobility_function_duration(mobility_func,
-                                    fish.mobility_function_duration);
+        fish.mobility_function_duration);
     get_mobility_function_target_pos(mobility_func,
-                                    fish.mobility_function_target_pos);
+        fish.mobility_function_target_pos);
 
     return fish;
 }
