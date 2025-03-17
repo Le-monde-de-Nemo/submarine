@@ -7,10 +7,20 @@
 //
 //      The structure contains:
 //          - a specie, COMMON is the by default specie.
-//          - a fig, which is the id, the pos and the size of the this.
+//          - a fig, which is the id, the pos and the size of the fish.
 //              See `src/figure/figure.h`
-//          - a mobility function which is how the fish moves.
+//          - mobility functions which are how the fish moves.
+//              + `mobility_function_duration` gives the time needed to move.
+//              + `mobility_function_target_pos` gives the next `pos`.
+//
+//              The call of these functions do not modify the `fish` struct.
+//              To move the fish, you will need to call
+//                                          `fish__set_current_pos`.
+//
 //              See `src/mobility/mobility.h`
+//
+//              You don't need to call `mobility_function_x`!
+//              Use `fish__get_move_duration` and `fish__get_target_pos`.
 // --------------------------------------------------------------------------
 
 #include <stdio.h>
@@ -40,17 +50,52 @@ char* specie__disp(enum species specie)
 // --------------------------------------------------------------------------
 
 struct fish_t
-fish__init_fish(int id, int is_started, enum species specie,
-                        struct vec2 pos, struct vec2 size)
+fish__init_fish(enum species specie,
+                int id, struct vec2 pos, struct vec2 size,
+                const char* mobility_func)
 {
     struct fish_t fish = {
         .specie = specie,
-        .is_started = is_started,
+        .is_started = 0, // Not started by default.
         .fig = figure__init_figure(id, pos, size),
         //.mobility_function = NULL
     };
 
     return fish;
+}
+
+// ----------------------------------------------------------------------
+
+int fish__get_id(const struct fish_t* ptr_fish)
+{
+    // TODO
+    return 0;
+}
+
+const char* fish__get_mobility_func(const struct fish_t* ptr_fish)
+{
+    // TODO
+    return NULL;
+}
+
+// ----------------------------------------------------------------------
+
+int fish__is_started(const struct fish_t* ptr_fish)
+{
+    // TODO
+    return 0;
+}
+
+struct fish_t fish__start_fish(const struct fish_t* ptr_fish)
+{
+    // TODO
+    return *ptr_fish;
+}
+
+struct fish_t fish__stop_fish(const struct fish_t* ptr_fish)
+{
+    // TODO
+    return *ptr_fish;
 }
 
 // --------------------------------------------------------------------------
@@ -89,26 +134,12 @@ struct vec2 fish__get_target_pos(const struct fish_t* fish)
     return vec2__zeros();
 }
 
-struct fish_t*
-fish__set_target_pos(const struct vec2 target_pos, struct fish_t* fish)
-{
-    // TODO
-    return fish;
-}
-
 // --------------------------------------------------------------------------
 
 int fish__get_move_duration(const struct fish_t* fish)
 {
     // TODO
     return 0;
-}
-
-struct fish_t*
-fish__set_move_duration(int time_duration, struct fish_t* fish)
-{
-    // TODO
-    return fish;
 }
 
 // --------------------------------------------------------------------------

@@ -37,7 +37,11 @@ struct fish_t {
     enum species specie;
     int is_started; // 0 means not, 1 or other things mean yes.
     struct figure_t fig;
-    //void* (*mobility_function)(void*);
+
+    // To know where and when the fish will go, given a former position.
+    // See `src/fish/fish.c`.
+    int (*mobility_function_duration)();
+    struct vec2 (*mobility_function_target_pos)();
 };
 
 // ----------------------------------------------------------------------
@@ -53,13 +57,27 @@ struct fish_t {
 // ----------------------------------------------------------------------
 
 struct fish_t
-fish__init_fish(int id, int is_started, enum species specie,
-                        struct vec2 pos, struct vec2 size);
+fish__init_fish(enum species specie,
+                int id, struct vec2 pos, struct vec2 size,
+                const char* mobility_func);
 
 // ----------------------------------------------------------------------
 
 int fish__get_id(const struct fish_t* ptr_fish);
+
+/* Returning Examples:
+ *  "RandomWayPoint";
+ *  "DirectWayPoint";
+ *
+ *  See `src/mobility/mobility.h`.
+*/
+const char* fish__get_mobility_func(const struct fish_t* ptr_fish);
+
+// ----------------------------------------------------------------------
+
 int fish__is_started(const struct fish_t* ptr_fish);
+struct fish_t fish__start_fish(const struct fish_t* ptr_fish);
+struct fish_t fish__stop_fish(const struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
 // By default, the type of the fish is COMMON, see `enum SPECIES`.
@@ -80,13 +98,18 @@ struct vec2 fish__get_current_pos(const struct fish_t* fish);
 struct fish_t*
 fish__set_current_pos(const struct vec2 pos, struct fish_t* fish);
 
-struct vec2 fish__get_target_pos(const struct fish_t* fish);
-struct fish_t*
-fish__set_target_pos(const struct vec2 target_pos, struct fish_t* fish);
+// ----------------------------------------------------------------------
+// To access to the next pos of the fish, given his mobility functions.
+//      By default, the fish is moving randomly, using
+//                                                  `random_way_point`.
+//
+//      You should never call directly the mobility functions
+//                                                  from the struct.
+//      Use these functions below instead!
+// ----------------------------------------------------------------------
 
+struct vec2 fish__get_target_pos(const struct fish_t* fish);
 int fish__get_move_duration(const struct fish_t* fish);
-struct fish_t*
-fish__set_move_duration(int time_duration, struct fish_t* fish);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a fish creation.
