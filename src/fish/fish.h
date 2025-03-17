@@ -11,42 +11,51 @@
 //      - `COMMON` = -1, by default
 // ----------------------------------------------------------------------
 
-enum Species {
+enum species {
     POISSON_ROUGE, // 0
     POISSON_CLOWN, // 1
+    NUM_SPECIES, // without COMMON
     COMMON = -1
 };
 
 /* Associate a string to a specie.
  * Example:
  *      POISSON_ROUGE --> "PoissonRouge";
- *      POISSON_CLOWN --> "PoissonClown".
+ *      POISSON_CLOWN --> "PoissonClown";
+ *      COMMON        --> "BasicFish";
 */
-char* specie__disp(enum Species specie);
+char* specie__disp(enum species specie);
 
 // ----------------------------------------------------------------------
 
-struct Fish {
-    enum Species specie;
-    struct vec2 coordinates;
+struct fish_t {
+    enum species specie;
+    struct vec2 current_pos; // get_pos | set_pos
+    struct vec2 target_pos; // get_target_pos | set_target_pos
+    //int time_duration; // in seconds.
+    //int fish_speed; // in `meter/seconds`.
 };
 
 // ----------------------------------------------------------------------
 // Create a fish.
 //      type = COMMON.
-//      pos  = (0, 0).
+//      current_pos   = (0, 0).
+//      target_pos    = (1, 1).
+//      time_duration = 1.
+//      fish_speed    = 1.
 //
 //      The pos is actually a `vec2`. See `src/utils/vec2.h`.
 // ----------------------------------------------------------------------
 
-struct Fish fish__init_fish();
+struct fish_t fish__init_fish();
 
 // ----------------------------------------------------------------------
 // By default, the type of the fish is COMMON, see `enum SPECIES`.
 // ----------------------------------------------------------------------
 
-enum Species fish__get_type(const struct Fish* fish);
-struct Fish* fish__set_type(const enum Species specie, struct Fish* fish);
+enum species fish__get_type(const struct fish_t* fish);
+struct fish_t*
+fish__set_type(const enum species specie, struct fish_t* fish);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.
@@ -55,21 +64,24 @@ struct Fish* fish__set_type(const enum Species specie, struct Fish* fish);
 //          it does not verify if the coordinates are in the aquarium.
 // ----------------------------------------------------------------------
 
-struct vec2 fish__get_pos(const struct Fish* fish);
-struct Fish* fish__set_pos(const struct vec2 pos, struct Fish* fish);
+struct vec2 fish__get_current_pos(const struct fish_t* fish);
+struct fish_t*
+fish__set_current_pos(const struct vec2 pos, struct fish_t* fish);
 
-struct vec2 fish__get_target_pos(const struct Fish* fish);
-struct Fish* fish__set_target_pos(const struct vec2 target_pos, struct Fish* fish);
+struct vec2 fish__get_target_pos(const struct fish_t* fish);
+struct fish_t*
+fish__set_target_pos(const struct vec2 target_pos, struct fish_t* fish);
 
-int fish__get_move_duration(const struct Fish* fish);
-struct Fish* fish__set_move_duration(const struct Fish* fish, int duration);
+int fish__get_move_duration(const struct fish_t* fish);
+struct fish_t*
+fish__set_move_duration(int time_duration, const struct fish_t* fish);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a fish creation.
 //      The fish is allocated on the stack.
 // ----------------------------------------------------------------------
 
-int fish__destroy_fish(struct Fish* ptr_fish);
+int fish__destroy_fish(struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
 #endif // __FISH__H__

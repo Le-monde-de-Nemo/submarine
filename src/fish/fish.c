@@ -11,26 +11,44 @@
 #include "fish.h"
 #include "vec2.h"
 
+// ----------------------------------------------------------------------
+
+//static char* species_name[] = {
+    //"PoissonRouge",
+    //"PoissonClown",
+//};
+
+char* specie__disp(enum species specie)
+{
+    if (specie == COMMON) {
+        return "BasicFish";
+    }
+
+    //TODO
+    return NULL;
+}
+
 // --------------------------------------------------------------------------
 
-struct Fish fish__init_fish()
+struct fish_t fish__init_fish()
 {
-    struct Fish fish;
+    struct fish_t fish;
     fish.specie = COMMON;
-    fish.coordinates = vec2__zeros();
+    fish.current_pos = vec2__zeros();
+    fish.target_pos = vec2__ones();
 
     return fish;
 }
 
 // --------------------------------------------------------------------------
 
-enum Species fish__getType(const struct Fish* fish)
+enum species fish__get_type(const struct fish_t* fish)
 {
     // TODO
     return COMMON;
 }
 
-struct Fish* fish__setType(const enum Species specie, struct Fish* fish)
+struct fish_t* fish__set_type(const enum species specie, struct fish_t* fish)
 {
     // TODO
     return fish;
@@ -38,13 +56,13 @@ struct Fish* fish__setType(const enum Species specie, struct Fish* fish)
 
 // --------------------------------------------------------------------------
 
-struct vec2 fish__getPos(const struct Fish* fish)
+struct vec2 fish__get_current_pos(const struct fish_t* fish)
 {
     // TODO
     return vec2__zeros();
 }
 
-struct Fish* fish__setPos(const struct vec2 pos, struct Fish* fish)
+struct fish_t* fish__set_current_pos(const struct vec2 pos, struct fish_t* fish)
 {
     // TODO
     return fish;
@@ -52,7 +70,37 @@ struct Fish* fish__setPos(const struct vec2 pos, struct Fish* fish)
 
 // --------------------------------------------------------------------------
 
-int fish__destroy_fish(struct Fish* ptr_fish)
+struct vec2 fish__get_target_pos(const struct fish_t* fish)
+{
+    // TODO
+    return vec2__zeros();
+}
+
+struct fish_t*
+fish__set_target_pos(const struct vec2 target_pos, struct fish_t* fish)
+{
+    // TODO
+    return fish;
+}
+
+// --------------------------------------------------------------------------
+
+int fish__get_move_duration(const struct fish_t* fish)
+{
+    // TODO
+    return 0;
+}
+
+struct fish_t*
+fish__set_move_duration(int time_duration, const struct fish_t* fish)
+{
+    // TODO
+    return fish;
+}
+
+// --------------------------------------------------------------------------
+
+int fish__destroy_fish(struct fish_t* ptr_fish)
 {
     // TODO
     return 0;
