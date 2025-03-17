@@ -45,8 +45,8 @@ struct Fish fish__init_fish();
 // By default, the type of the fish is COMMON, see `enum SPECIES`.
 // ----------------------------------------------------------------------
 
-enum Species fish__getType(const struct Fish* fish);
-struct Fish* fish__setType(const enum Species specie, struct Fish* fish);
+enum Species fish__get_type(const struct Fish* fish);
+struct Fish* fish__set_type(const enum Species specie, struct Fish* fish);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.
@@ -58,11 +58,11 @@ struct Fish* fish__setType(const enum Species specie, struct Fish* fish);
 struct vec2 fish__get_pos(const struct Fish* fish);
 struct Fish* fish__set_pos(const struct vec2 pos, struct Fish* fish);
 
-struct vec2 fish__getTargetPos(const struct Fish* fish);
-struct Fish* fish__setTargetPos(const struct vec2 target_pos, struct Fish* fish);
+struct vec2 fish__get_target_pos(const struct Fish* fish);
+struct Fish* fish__set_target_pos(const struct vec2 target_pos, struct Fish* fish);
 
-int fish__getMoveDuration(const struct Fish* fish);
-struct Fish* fish__setMoveDuration(const struct Fish* fish, int duration);
+int fish__get_move_duration(const struct Fish* fish);
+struct Fish* fish__set_move_duration(const struct Fish* fish, int duration);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a fish creation.
