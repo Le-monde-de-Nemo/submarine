@@ -42,6 +42,7 @@ struct fish_t {
     // See `src/fish/fish.c`.
     int (*mobility_function_duration)();
     struct vec2 (*mobility_function_target_pos)();
+    const char* mobility_function_name;
 };
 
 // ----------------------------------------------------------------------

@@ -4,6 +4,7 @@
 //      Dependencies:
 //              - `vec2.h` for the coordinates, and sizes.
 //              - `figure.h` for the id, the pos and the size of a fish.
+//              - `mobility.h` for the mobility functions.
 //
 //      The structure contains:
 //          - a specie, COMMON is the by default specie.
@@ -29,6 +30,7 @@
 #include "fish.h"
 #include "figure.h"
 #include "vec2.h"
+#include "mobility.h"
 
 // ----------------------------------------------------------------------
 
@@ -58,8 +60,13 @@ fish__init_fish(enum species specie,
         .specie = specie,
         .is_started = 0, // Not started by default.
         .fig = figure__init_figure(id, pos, size),
-        //.mobility_function = NULL
+        .mobility_function_name = mobility_func
     };
+
+    get_mobility_function_duration(mobility_func,
+                                    fish.mobility_function_duration);
+    get_mobility_function_target_pos(mobility_func,
+                                    fish.mobility_function_target_pos);
 
     return fish;
 }
