@@ -17,6 +17,13 @@ enum Species {
     COMMON = -1
 };
 
+/* Associate a string to a specie.
+ * Example:
+ *      POISSON_ROUGE --> "PoissonRouge";
+ *      POISSON_CLOWN --> "PoissonClown".
+*/
+char* specie__disp(enum Species specie);
+
 // ----------------------------------------------------------------------
 
 struct Fish {
@@ -48,8 +55,8 @@ struct Fish* fish__setType(const enum Species specie, struct Fish* fish);
 //          it does not verify if the coordinates are in the aquarium.
 // ----------------------------------------------------------------------
 
-struct vec2 fish__getPos(const struct Fish* fish);
-struct Fish* fish__setPos(const struct vec2 pos, struct Fish* fish);
+struct vec2 fish__get_pos(const struct Fish* fish);
+struct Fish* fish__set_pos(const struct vec2 pos, struct Fish* fish);
 
 struct vec2 fish__getTargetPos(const struct Fish* fish);
 struct Fish* fish__setTargetPos(const struct vec2 target_pos, struct Fish* fish);
@@ -65,6 +72,4 @@ struct Fish* fish__setMoveDuration(const struct Fish* fish, int duration);
 int fish__destroy_fish(struct Fish* ptr_fish);
 
 // ----------------------------------------------------------------------
-
-char* specie__disp(enum Species specie);
 #endif // __FISH__H__
