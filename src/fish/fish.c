@@ -2,14 +2,30 @@
 // The implementation of the FISH structure.
 //      See `/src/fish/fish.h`.
 //      Dependencies:
-//              - `vec2.h` for the coordinates.
+//              - `vec2.h` for the coordinates, and sizes.
+//              - `figure.h` for the id, the pos and the size of a fish.
+//
+//      The structure contains:
+//          - a specie, COMMON is the by default specie.
+//          - a fig, which is the id, the pos and the size of the this.
+//              See `src/figure/figure.h`
+//          - a mobility function which is how the fish moves.
+//              See `src/mobility/mobility.h`
 // --------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "fish.h"
+#include "figure.h"
 #include "vec2.h"
+
+struct fish_t {
+    enum species specie;
+    int is_started; // 0 means not, 1 or other things means yes.
+    struct figure_t* fig;
+    //void* (*mobility_function)(void*);
+};
 
 // ----------------------------------------------------------------------
 
@@ -30,12 +46,17 @@ char* specie__disp(enum species specie)
 
 // --------------------------------------------------------------------------
 
-struct fish_t fish__init_fish()
+struct fish_t
+fish__init_fish(int id, int is_started, enum species specie,
+                        struct vec2 pos, struct vec2 size)
 {
-    struct fish_t fish;
-    fish.specie = COMMON;
-    fish.current_pos = vec2__zeros();
-    fish.target_pos = vec2__ones();
+    struct fish_t fish = {
+        .specie = specie,
+        .is_started = is_started,
+        //.fig = figure__init_figure(id, pos, size),
+        .fig = NULL,
+        //.mobility_function = NULL
+    };
 
     return fish;
 }
@@ -92,7 +113,7 @@ int fish__get_move_duration(const struct fish_t* fish)
 }
 
 struct fish_t*
-fish__set_move_duration(int time_duration, const struct fish_t* fish)
+fish__set_move_duration(int time_duration, struct fish_t* fish)
 {
     // TODO
     return fish;

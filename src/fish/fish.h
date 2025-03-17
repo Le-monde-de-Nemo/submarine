@@ -4,11 +4,10 @@
 #include "vec2.h"
 
 // ----------------------------------------------------------------------
-// The FISH structure!
-// This one contains 2 type of fish :
-//      - `PoissonRouge`
-//      - `PoissonClown`
-//      - `COMMON` = -1, by default
+// The header of the fish.
+//      See `src/fish/fish.c`.
+//      Dependencies:
+//              - `figure.h` for the id, coordinates, and size.
 // ----------------------------------------------------------------------
 
 enum species {
@@ -28,26 +27,29 @@ char* specie__disp(enum species specie);
 
 // ----------------------------------------------------------------------
 
-struct fish_t {
-    enum species specie;
-    struct vec2 current_pos; // get_pos | set_pos
-    struct vec2 target_pos; // get_target_pos | set_target_pos
-    // int time_duration; // in seconds.
-    // int fish_speed; // in `meter/seconds`.
-};
+/* see `src/fish/fish.c` for more details! */
+struct fish_t;
 
 // ----------------------------------------------------------------------
 // Create a fish.
-//      type = COMMON.
-//      current_pos   = (0, 0).
-//      target_pos    = (1, 1).
-//      time_duration = 1.
-//      fish_speed    = 1.
+//  By default:
+//      id         = 0.
+//      specie     = COMMON.
+//      is_started = 0. 0 means not. 1 means yes.
+//      pos        = (0, 0). See `src/figure/figure.h`
+//      size       = (1, 1). See `src/figure/figure.h`
 //
 //      The pos is actually a `vec2`. See `src/utils/vec2.h`.
 // ----------------------------------------------------------------------
 
-struct fish_t fish__init_fish();
+struct fish_t
+fish__init_fish(int id, int is_started, enum species specie,
+                        struct vec2 pos, struct vec2 size);
+
+// ----------------------------------------------------------------------
+
+int fish__get_id(const struct fish_t* ptr_fish);
+int fish__is_started(const struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
 // By default, the type of the fish is COMMON, see `enum SPECIES`.
@@ -74,11 +76,12 @@ fish__set_target_pos(const struct vec2 target_pos, struct fish_t* fish);
 
 int fish__get_move_duration(const struct fish_t* fish);
 struct fish_t*
-fish__set_move_duration(int time_duration, const struct fish_t* fish);
+fish__set_move_duration(int time_duration, struct fish_t* fish);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a fish creation.
 //      The fish is allocated on the stack.
+//      It returns 0 if it has been done with error.
 // ----------------------------------------------------------------------
 
 int fish__destroy_fish(struct fish_t* ptr_fish);
