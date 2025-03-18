@@ -14,6 +14,12 @@
 // Those arrays are needed to find the mobility function given a name.
 // --------------------------------------------------------------------------
 
+/* The names in that array need to be different! */
+static const char* array_mobility_function_names[NUM_MOBILITY_FUNCTIONS] = {
+    "RandomWayPoint",
+    "DirectWayPoint"
+};
+
 static int (*array_mobility_function_duration[NUM_MOBILITY_FUNCTIONS])(const char*, int (*ptr_func)()) = {
     random_way_point_duration,
     direct_way_point_duration
@@ -28,25 +34,31 @@ static struct vec2 (*array_mobility_function_target_pos[NUM_MOBILITY_FUNCTIONS])
 
 void get_mobility_function_duration(const char* name, int (*ptr_func)())
 {
-    if (strcmp(name, "RandomWayPoint") == 0) {
-        ptr_func = array_mobility_function_duration[RANDOM_WAY_POINT];
-    } else if (strcmp(name, "DirectWayPoint") == 0) {
-        ptr_func = array_mobility_function_duration[DIRECT_WAY_POINT];
-    } else {
-        ptr_func = array_mobility_function_duration[RANDOM_WAY_POINT];
+    // ind could be for instance RANDOM_WAY_POINT or DIRECT_WAY_POINT.
+    for (int ind = 0; ind < NUM_MOBILITY_FUNCTIONS; ++ind) {
+        if (strcmp(name, array_mobility_function_names[ind]) == 0) {
+            ptr_func = array_mobility_function_duration[ind];
+            return;
+        }
     }
+
+    // If the name does not exist, take "RandomWayPoint".
+    ptr_func = array_mobility_function_duration[RANDOM_WAY_POINT];
 }
 
 void get_mobility_function_target_pos(const char* name,
     struct vec2 (*ptr_func)())
 {
-    if (strcmp(name, "RandomWayPoint") == 0) {
-        ptr_func = array_mobility_function_target_pos[RANDOM_WAY_POINT];
-    } else if (strcmp(name, "DirectWayPoint") == 0) {
-        ptr_func = array_mobility_function_target_pos[DIRECT_WAY_POINT];
-    } else {
-        ptr_func = array_mobility_function_target_pos[RANDOM_WAY_POINT];
+    // ind could be for instance RANDOM_WAY_POINT or DIRECT_WAY_POINT.
+    for (int ind = 0; ind < NUM_MOBILITY_FUNCTIONS; ++ind) {
+        if (strcmp(name, array_mobility_function_names[ind]) == 0) {
+            ptr_func = array_mobility_function_target_pos[ind];
+            return;
+        }
     }
+
+    // If the name does not exist, take "RandomWayPoint".
+    ptr_func = array_mobility_function_target_pos[RANDOM_WAY_POINT];
 }
 
 // --------------------------------------------------------------------------
