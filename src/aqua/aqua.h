@@ -3,6 +3,7 @@
 
 #include "figure.h"
 #include "fish.h"
+#include "list.h"
 #include "vec2.h"
 #include "vue.h"
 
@@ -10,9 +11,11 @@
 // The header of the aqua(rium).
 //      See `src/aqua/aqua.c`.
 //      Dependencies:
-//              - `vec2.h` for the coordinates.
-//              - `fish.h` for the fishes.
-//              - `vue.h`  for the views.
+//              - `vec2.h`   for the coordinates.
+//              - `fish.h`   for the fishes.
+//              - `vue.h`    for the views.
+//              - `figure.h` for the size and the coordinates.
+//              - `list.h`   to store fishes and views.
 // ----------------------------------------------------------------------
 
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
@@ -23,11 +26,8 @@ struct aqua_t {
     struct figure_t fig; // id, size and coord of the aquarium.
                          // See `src/figure/figure.h`
 
-    // int nb_vues;
-    // struct vue_t* array_vue;
-    //
-    // int nb_fishes;
-    // struct fish_t* array_fishes;
+    List list_vues;
+    List list_fishes;
 };
 
 // ----------------------------------------------------------------------

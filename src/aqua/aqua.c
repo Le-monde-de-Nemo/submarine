@@ -9,6 +9,8 @@
 //
 //      The structure contains:
 //          - a fig, which is the id, the coord and the size of the aqua.
+//          - a list of fishes, using `src/utils/list.h`.
+//          - a list of views, using `src/utils/list.h`.
 //              See `src/figure/figure.h`
 // --------------------------------------------------------------------------
 
