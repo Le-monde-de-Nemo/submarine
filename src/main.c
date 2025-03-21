@@ -1,3 +1,4 @@
+#include "controller.h"
 #include "repl.h"
 #include "repl_add_view.h"
 #include "repl_del_view.h"
@@ -12,6 +13,8 @@
 
 static int exited = 0;
 
+static struct controller_t controller;
+
 struct worker_t {
     int socketfd;
 };
@@ -21,6 +24,18 @@ void* worker(void* args);
 
 int main(int argc, char* argv[])
 {
+    if (argc < 2)
+        controller = controller__default();
+
+    else
+        controller = controller__load_conf(argv[1]);
+
+    printf("Controller config :\n");
+    printf("\n---------------\n");
+    char buf[4096] = {};
+    printf("%s", controller__disp(buf, sizeof(buf), controller));
+    printf("---------------\n\n");
+
     pthread_t master_thread;
     pthread_create(&master_thread, NULL, master, NULL);
 
