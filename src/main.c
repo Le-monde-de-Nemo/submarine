@@ -12,7 +12,12 @@
 
 static int exited = 0;
 
+struct worker_t {
+    int socketfd;
+};
+
 void* master(void* args);
+void* worker(void* args);
 
 int main(int argc, char* argv[])
 {
@@ -45,6 +50,20 @@ void* master(void* args)
 {
     while (!exited) {
         fprintf(stderr, "salut je suis le maître !!\n");
+        sleep(2);
+
+        // on accept
+        //
+    }
+
+    fprintf(stderr, "exited!\n");
+    return NULL;
+}
+
+void* worker(void* args)
+{
+    while (!exited) {
+        fprintf(stderr, "salut je suis le travailleur !!\n");
         sleep(2);
     }
 
