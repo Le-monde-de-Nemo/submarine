@@ -7,15 +7,15 @@
 #include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <pthread.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifndef BUFLEN
 #define BUFLEN 2048
@@ -24,7 +24,7 @@
 #define LHOST_WORKER "127.0.0.1"
 
 /* Used by the worker. */
-void error(char *msg)
+void error(char* msg)
 {
     perror(msg);
     exit(1);
@@ -86,25 +86,28 @@ void* master(void* args)
     int sockfd, newsockfd, portno, cli_socket_len;
     struct sockaddr_in serv_addr, cli_addr;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) error("ERROR opening socket");
+    if (sockfd < 0)
+        error("ERROR opening socket");
 
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    bzero((char*)&serv_addr, sizeof(serv_addr));
 
     portno = controller.port;
 
     serv_addr.sin_family = AF_INET;
-    //serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    // serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     inet_pton(AF_INET, LHOST_WORKER, &serv_addr.sin_addr.s_addr);
     serv_addr.sin_port = htons(portno);
 
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) error("ERROR on bind()");
+    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+        error("ERROR on bind()");
 
     while (!exited) {
         listen(sockfd, 5);
 
         cli_socket_len = sizeof(cli_addr);
-        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &cli_socket_len);
-        if (newsockfd < 0) error("ERROR on accept()");
+        newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_socket_len);
+        if (newsockfd < 0)
+            error("ERROR on accept()");
 
         pthread_create(&worker_thread, NULL, worker, (void*)newsockfd);
     }
@@ -115,36 +118,38 @@ void* master(void* args)
 }
 
 //
-    //printf("=> read() ? ...");
-    //getchar();
-    //printf("OK\n");
+// printf("=> read() ? ...");
+// getchar();
+// printf("OK\n");
 
 /*
  * :param args: an integer, it is a file descriptor.
  * `worker` will write in that file descriptor.
  * :return: nothing.
-*/
+ */
 void* worker(void* args)
 {
     if (!args) {
         return NULL;
     }
 
-     char buffer[BUFLEN] = {};
-     //bzero(buffer, BUFLEN);
-     int n; int newsockfd = (int)args;
+    char buffer[BUFLEN] = {};
+    // bzero(buffer, BUFLEN);
+    int n;
+    int newsockfd = (int)args;
 
     while (!exited) {
         n = read(newsockfd, buffer, BUFLEN);
-        if (n < 0) error("ERROR reading from socket");
+        if (n < 0)
+            error("ERROR reading from socket");
         printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
 
         n = write(newsockfd, "I got your message", 18);
-        if (n < 0) error("ERROR writing to socket");
+        if (n < 0)
+            error("ERROR writing to socket");
     }
 
     close(newsockfd);
     fprintf(stderr, "exited!\n");
     return NULL;
 }
-
