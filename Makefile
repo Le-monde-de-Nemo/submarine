@@ -4,7 +4,7 @@ src_dir?=src
 src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/)))
 includes=$(patsubst %,-I%,${src_dirs})
 CFLAGS+=-Wall -g -O0 ${includes}
-LDFLAGS+=-fsanitize=address
+LDFLAGS+=-fsanitize=address,undefined
 
 srcs+=$(wildcard ${src_dir}/*.c ${src_dir}/**/*.c)
 headers+=$(wildcard ${src_dir}/*.h ${src_dir}/**/*.h)
