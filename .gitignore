@@ -1,5 +1,6 @@
 /build
 /controller
+/controller.cfg
 /tags
 /.vscode
 /compile_flags.txt
