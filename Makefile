@@ -9,7 +9,7 @@ src_mains+=${src_dir}/main.c
 tst_mains+=${tst_dir}/tst.c
 tst_mains+=${tst_dir}/sec.c
 tst_mains+=${tst_dir}/vectors.c
-
+tst_mains+=${tst_dir}/fish.c
 
 # You shouldn't need to edit what's next
 build_tst_targets=$(patsubst ${tst_dir}/%.c,${build_dir}/%,${tst_mains})
