@@ -113,7 +113,7 @@ int repl__run(struct repl repl)
         if (res == NULL || interrupted) {
             fprintf(stderr, "Found EOF while reading input, exiting...\n");
             free_argv(argv);
-            sigaction(SIGUSR1, &sa_old, &sa);
+            sigaction(SIGINT, &sa_old, &sa);
             return EOF;
         }
 
@@ -144,7 +144,7 @@ int repl__run(struct repl repl)
     }
 
     free_argv(argv);
-    sigaction(SIGUSR1, &sa_old, &sa);
+    sigaction(SIGINT, &sa_old, &sa);
     return 0;
 }
 
