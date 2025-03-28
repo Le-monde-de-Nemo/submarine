@@ -72,20 +72,14 @@ fish__init_fish(enum species specie,
 
 // ----------------------------------------------------------------------
 
-int fish__get_id(const struct fish_t* ptr_fish)
+int fish__get_id(const struct fish_t fish)
 {
-    if (!ptr_fish) {
-        return -1;
-    }
-    return figure__get_id(&(ptr_fish->fig));
+    return figure__get_id(&(fish.fig));
 }
 
-const char* fish__get_mobility_func(const struct fish_t* ptr_fish)
+const char* fish__get_mobility_func(const struct fish_t fish)
 {
-    if (!ptr_fish) {
-        return NULL;
-    }
-    return ptr_fish->mobility_function_name;
+    return fish.mobility_function_name;
 }
 
 // ----------------------------------------------------------------------
@@ -100,14 +94,31 @@ int fish__is_started(const struct fish_t* ptr_fish)
 
 struct fish_t fish__start_fish(struct fish_t fish)
 {
-    fish.is_started = 1;
-    return fish;
+    struct fish_t new_fish = {
+        .specie = fish.specie,
+        .is_started = 1,
+        .fig = fish.fig,
+        .mobility_function_duration = fish.mobility_function_duration,
+        .mobility_function_target_pos = fish.mobility_function_target_pos,
+        .mobility_function_name = fish.mobility_function_name
+    };
+
+    return new_fish;
 }
 
 struct fish_t fish__stop_fish(struct fish_t fish)
 {
-    fish.is_started = 1;
-    return fish;
+    struct fish_t new_fish = {
+        .specie = fish.specie,
+        .is_started = 1,
+        .fig = fish.fig,
+        .mobility_function_duration = fish.mobility_function_duration,
+        .mobility_function_target_pos = fish.mobility_function_target_pos,
+        .mobility_function_name = fish.mobility_function_name
+    };
+
+    return new_fish;
+
 }
 
 // --------------------------------------------------------------------------
@@ -133,31 +144,36 @@ fish__set_type(const enum species specie, struct fish_t fish)
 
 struct vec2 fish__get_current_pos(const struct fish_t fish)
 {
-
-    return vec2__zeros();
+    return figure__get_current_pos(&(fish.fig));
 }
 
 struct fish_t
 fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
 {
-    // TODO
-    return fish;
+    struct fish_t new_fish = {
+        .specie = fish.specie,
+        .is_started = fish.is_started,
+        .fig = figure__set_current_pos(pos, &(fish.fig)),
+        .mobility_function_duration = fish.mobility_function_duration,
+        .mobility_function_target_pos = fish.mobility_function_target_pos,
+        .mobility_function_name = fish.mobility_function_name
+    };
+
+    return new_fish;
 }
 
 // --------------------------------------------------------------------------
 
 struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
-    // TODO
-    return vec2__zeros();
+    return fish.mobility_function_target_pos();
 }
 
 // --------------------------------------------------------------------------
 
 int fish__get_move_duration(const struct fish_t fish)
 {
-    // TODO
-    return 0;
+    return fish.mobility_function_duration();
 }
 
 // --------------------------------------------------------------------------

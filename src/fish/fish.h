@@ -64,8 +64,7 @@ fish__init_fish(enum species specie,
 
 // ----------------------------------------------------------------------
 
-/* returns -1 if it does not exist. */
-int fish__get_id(const struct fish_t* ptr_fish);
+int fish__get_id(const struct fish_t fish);
 
 /* Returning Examples:
  *  "RandomWayPoint";
@@ -75,13 +74,11 @@ int fish__get_id(const struct fish_t* ptr_fish);
  *
  *  Returns NULL if the fish does not exist or if the mob func is not init.
  */
-const char* fish__get_mobility_func(const struct fish_t* ptr_fish);
+const char* fish__get_mobility_func(const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t* ptr_fish);
-
-/* If creates side effects here. */
 struct fish_t fish__start_fish(struct fish_t fish);
 struct fish_t fish__stop_fish(struct fish_t fish);
 
