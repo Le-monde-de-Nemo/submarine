@@ -37,7 +37,7 @@ all: build
 .PHONY: build
 build: controller
 
-controller: ${src_objs} ${build_dir}/main.o
+controller: ${src_objs} ${src_dir}/main.c
 	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
 ${build_dir}/%.o: %.c
