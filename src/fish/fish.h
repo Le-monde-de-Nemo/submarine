@@ -64,6 +64,7 @@ fish__init_fish(enum species specie,
 
 // ----------------------------------------------------------------------
 
+/* returns -1 if it does not exist. */
 int fish__get_id(const struct fish_t* ptr_fish);
 
 /* Returning Examples:
@@ -71,22 +72,26 @@ int fish__get_id(const struct fish_t* ptr_fish);
  *  "DirectWayPoint";
  *
  *  See `src/mobility/mobility.h`.
+ *
+ *  Returns NULL if the fish does not exist or if the mob func is not init.
  */
 const char* fish__get_mobility_func(const struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t* ptr_fish);
-struct fish_t fish__start_fish(const struct fish_t* ptr_fish);
-struct fish_t fish__stop_fish(const struct fish_t* ptr_fish);
+
+/* If creates side effects here. */
+struct fish_t fish__start_fish(struct fish_t fish);
+struct fish_t fish__stop_fish(struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // By default, the type of the fish is COMMON, see `enum SPECIES`.
 // ----------------------------------------------------------------------
 
-enum species fish__get_type(const struct fish_t* fish);
-struct fish_t*
-fish__set_type(const enum species specie, struct fish_t* fish);
+enum species fish__get_type(const struct fish_t fish);
+struct fish_t
+fish__set_type(const enum species specie, const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.
@@ -95,9 +100,9 @@ fish__set_type(const enum species specie, struct fish_t* fish);
 //          it does not verify if the coordinates are in the aquarium.
 // ----------------------------------------------------------------------
 
-struct vec2 fish__get_current_pos(const struct fish_t* fish);
-struct fish_t*
-fish__set_current_pos(const struct vec2 pos, struct fish_t* fish);
+struct vec2 fish__get_current_pos(const struct fish_t fish);
+struct fish_t
+fish__set_current_pos(const struct vec2 pos, struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // To access to the next pos of the fish, given his mobility functions.
@@ -109,8 +114,8 @@ fish__set_current_pos(const struct vec2 pos, struct fish_t* fish);
 //      Use these functions below instead!
 // ----------------------------------------------------------------------
 
-struct vec2 fish__get_target_pos(const struct fish_t* fish);
-int fish__get_move_duration(const struct fish_t* fish);
+struct vec2 fish__get_target_pos(const struct fish_t fish);
+int fish__get_move_duration(const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a fish creation.

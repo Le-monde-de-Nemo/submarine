@@ -34,19 +34,18 @@
 
 // ----------------------------------------------------------------------
 
-// static char* species_name[] = {
-//"PoissonRouge",
-//"PoissonClown",
-//};
+static char* species_name[] = {
+    "PoissonRouge",
+    "PoissonClown",
+};
 
 char* specie__disp(enum species specie)
 {
-    if (specie == COMMON) {
+    if (specie < 0 || NUM_SPECIES <= specie || specie == COMMON) {
         return "BasicFish";
     }
 
-    // TODO
-    return NULL;
+    return species_name[specie];
 }
 
 // --------------------------------------------------------------------------
@@ -75,45 +74,71 @@ fish__init_fish(enum species specie,
 
 int fish__get_id(const struct fish_t* ptr_fish)
 {
-    // TODO
-    return 0;
+    if (!ptr_fish) {
+        return -1;
+    }
+    return figure__get_id(&(ptr_fish->fig));
 }
 
 const char* fish__get_mobility_func(const struct fish_t* ptr_fish)
 {
-    // TODO
-    return NULL;
+    if (!ptr_fish) {
+        return NULL;
+    }
+    return ptr_fish->mobility_function_name;
 }
 
 // ----------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t* ptr_fish)
 {
-    // TODO
-    return 0;
+    if (!ptr_fish) {
+        return 0;
+    }
+    return ptr_fish->is_started;
 }
 
-struct fish_t fish__start_fish(const struct fish_t* ptr_fish)
+struct fish_t fish__start_fish(struct fish_t fish)
 {
-    // TODO
-    return *ptr_fish;
+    fish.is_started = 1;
+    return fish;
 }
 
-struct fish_t fish__stop_fish(const struct fish_t* ptr_fish)
+struct fish_t fish__stop_fish(struct fish_t fish)
 {
-    // TODO
-    return *ptr_fish;
+    fish.is_started = 1;
+    return fish;
 }
 
 // --------------------------------------------------------------------------
 
-enum species fish__get_type(const struct fish_t* fish)
+enum species fish__get_type(const struct fish_t fish)
 {
-    // TODO
-    return COMMON;
+    return fish.specie;
 }
 
-struct fish_t* fish__set_type(const enum species specie, struct fish_t* fish)
+struct fish_t
+fish__set_type(const enum species specie, struct fish_t fish)
+{
+    if (specie < 0 || NUM_SPECIES <= specie) {
+        fish.specie = COMMON;
+    } else {
+        fish.specie = specie;
+    }
+
+    return fish;
+}
+
+// --------------------------------------------------------------------------
+
+struct vec2 fish__get_current_pos(const struct fish_t fish)
+{
+
+    return vec2__zeros();
+}
+
+struct fish_t
+fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
 {
     // TODO
     return fish;
@@ -121,21 +146,7 @@ struct fish_t* fish__set_type(const enum species specie, struct fish_t* fish)
 
 // --------------------------------------------------------------------------
 
-struct vec2 fish__get_current_pos(const struct fish_t* fish)
-{
-    // TODO
-    return vec2__zeros();
-}
-
-struct fish_t* fish__set_current_pos(const struct vec2 pos, struct fish_t* fish)
-{
-    // TODO
-    return fish;
-}
-
-// --------------------------------------------------------------------------
-
-struct vec2 fish__get_target_pos(const struct fish_t* fish)
+struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
     // TODO
     return vec2__zeros();
@@ -143,7 +154,7 @@ struct vec2 fish__get_target_pos(const struct fish_t* fish)
 
 // --------------------------------------------------------------------------
 
-int fish__get_move_duration(const struct fish_t* fish)
+int fish__get_move_duration(const struct fish_t fish)
 {
     // TODO
     return 0;
@@ -153,6 +164,10 @@ int fish__get_move_duration(const struct fish_t* fish)
 
 int fish__destroy_fish(struct fish_t* ptr_fish)
 {
+    if (!ptr_fish) {
+        return 0;
+    }
+
     // TODO
     return 0;
 }
