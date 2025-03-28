@@ -12,7 +12,7 @@ char* proto__greeting(char* dst, long n, char* id, int nogreeting)
     return dst;
 }
 
-char* proto__get_fishes(char* dst, long n, struct Fish* fishes, int n_fishes)
+char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes)
 {
     char acc[n];
     char fish_buffer[n];
@@ -23,14 +23,14 @@ char* proto__get_fishes(char* dst, long n, struct Fish* fishes, int n_fishes)
     long n_acc = sizeof("list ");
 
     for (int i = 0; i < n_fishes; ++i) {
-        struct Fish fish = fishes[i];
+        struct fish_t fish = fishes[i];
         int len = snprintf(fish_buffer, n, "[%s at %dx%d,%dx%d,%d] ",
             specie__disp(fish.specie),
-            fish__getPos(&fish).x,
-            fish__getPos(&fish).y,
-            fish__getTargetPos(&fish).x,
-            fish__getTargetPos(&fish).y,
-            fish__getMoveDuration(&fish));
+            fish__get_current_pos(&fish).x,
+            fish__get_current_pos(&fish).y,
+            fish__get_target_pos(&fish).x,
+            fish__get_target_pos(&fish).y,
+            fish__get_move_duration(&fish));
 
         if (n_acc + len < n) {
             strcat(acc, fish_buffer);
