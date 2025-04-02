@@ -36,7 +36,7 @@ struct aqua_t aqua__init_aqua(struct vec2 size)
 
 // --------------------------------------------------------------------------
 
-int aqua__get_id(const struct aqua_t* ptr_aqua)
+int aqua__get_id(const struct aqua_t aqua)
 {
     // TODO
     return 0;
@@ -45,21 +45,21 @@ int aqua__get_id(const struct aqua_t* ptr_aqua)
 // --------------------------------------------------------------------------
 
 struct aqua_t
-aqua__add_fish(struct fish_t* ptr_fish, const struct aqua_t* ptr_aqua)
+aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     // TODO
-    return *ptr_aqua;
+    return aqua;
 }
 
 struct aqua_t
-aqua__del_fish(int id_fish, const struct aqua_t* ptr_aqua)
+aqua__del_fish(int id_fish, const struct aqua_t aqua)
 {
     // TODO
-    return *ptr_aqua;
+    return aqua;
 }
 
 struct fish_t
-aqua__get_fish(int id_fish, const struct aqua_t* ptr_aqua)
+aqua__get_fish(int id_fish, const struct aqua_t aqua)
 {
     // TODO
     struct fish_t fish = fish__init_fish(
@@ -71,28 +71,34 @@ aqua__get_fish(int id_fish, const struct aqua_t* ptr_aqua)
 }
 
 struct fish_t*
-aqua__get_fishes(const struct aqua_t* ptr_aqua)
+aqua__get_fishes(const struct aqua_t aqua)
 {
     // TODO
     return NULL;
 }
 
+int aqua__get_nb_fishes(const struct aqua_t aqua)
+{
+    // TODO
+    return 0;
+}
+
 // --------------------------------------------------------------------------
 
 struct aqua_t
-aqua__add_vue(struct vue_t* ptr_vue, const struct aqua_t* ptr_aqua)
+aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
-    return *ptr_aqua;
+    return aqua;
 }
 
 struct aqua_t
-aqua__del_vue(int id_vue, const struct aqua_t* ptr_aqua)
+aqua__del_vue(int id_vue, const struct aqua_t aqua)
 {
-    return *ptr_aqua;
+    return aqua;
 }
 
 struct vue_t
-aqua__get_vue(int id_vue, const struct aqua_t* ptr_aqua)
+aqua__get_vue(int id_vue, const struct aqua_t aqua)
 {
     // TODO
     struct vue_t vue = vue__init_vue(0, vec2__zeros(), vec2__ones());
@@ -100,10 +106,16 @@ aqua__get_vue(int id_vue, const struct aqua_t* ptr_aqua)
 }
 
 struct vue_t*
-aqua__get_vues(const struct aqua_t* ptr_aqua)
+aqua__get_vues(const struct aqua_t aqua)
 {
     // TODO
     return NULL;
+}
+
+int aqua__get_nb_vues(const struct aqua_t aqua)
+{
+    // TODO
+    return 0;
 }
 
 // --------------------------------------------------------------------------

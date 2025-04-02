@@ -40,7 +40,7 @@ struct aqua_t aqua__init_aqua(struct vec2 size);
 
 // ----------------------------------------------------------------------
 
-int aqua__get_id(const struct aqua_t* ptr_aqua);
+int aqua__get_id(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.
@@ -52,16 +52,19 @@ int aqua__get_id(const struct aqua_t* ptr_aqua);
 // ----------------------------------------------------------------------
 
 struct aqua_t
-aqua__add_fish(struct fish_t* ptr_fish, const struct aqua_t* ptr_aqua);
+aqua__add_fish(struct fish_t fish, const struct aqua_t aqua);
 
 struct aqua_t
-aqua__del_fish(int id_fish, const struct aqua_t* ptr_aqua);
+aqua__del_fish(int id_fish, const struct aqua_t aqua);
 
 struct fish_t
-aqua__get_fish(int id_fish, const struct aqua_t* ptr_aqua);
+aqua__get_fish(int id_fish, const struct aqua_t aqua);
 
 struct fish_t*
-aqua__get_fishes(const struct aqua_t* ptr_aqua);
+aqua__get_fishes(const struct aqua_t aqua);
+
+int
+aqua__get_nb_fishes(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // To manipulate vues in the aquarium.
@@ -74,16 +77,19 @@ aqua__get_fishes(const struct aqua_t* ptr_aqua);
 // ----------------------------------------------------------------------
 
 struct aqua_t
-aqua__add_vue(struct vue_t* ptr_vue, const struct aqua_t* ptr_aqua);
+aqua__add_vue(struct vue_t vue, const struct aqua_t aqua);
 
 struct aqua_t
-aqua__del_vue(int id_vue, const struct aqua_t* ptr_aqua);
+aqua__del_vue(int id_vue, const struct aqua_t aqua);
 
 struct vue_t
-aqua__get_vue(int id_vue, const struct aqua_t* ptr_aqua);
+aqua__get_vue(int id_vue, const struct aqua_t aqua);
 
 struct vue_t*
-aqua__get_vues(const struct aqua_t* ptr_aqua);
+aqua__get_vues(const struct aqua_t aqua);
+
+int
+aqua__get_nb_vues(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a aqua(rium) creation.
