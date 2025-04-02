@@ -6,8 +6,6 @@ tst_dir?=tst
 src_mains+=${src_dir}/main.c
 
 # Define here the list of files having main functions in tst directory
-tst_mains+=${tst_dir}/tst.c
-tst_mains+=${tst_dir}/sec.c
 tst_mains+=${tst_dir}/vectors.c
 tst_mains+=${tst_dir}/fish.c
 
