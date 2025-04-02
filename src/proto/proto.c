@@ -26,11 +26,11 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes)
         struct fish_t fish = fishes[i];
         int len = snprintf(fish_buffer, n, "[%s at %dx%d,%dx%d,%d] ",
             specie__disp(fish.specie),
-            fish__get_current_pos(&fish).x,
-            fish__get_current_pos(&fish).y,
-            fish__get_target_pos(&fish).x,
-            fish__get_target_pos(&fish).y,
-            fish__get_move_duration(&fish));
+            fish__get_current_pos(fish).x,
+            fish__get_current_pos(fish).y,
+            fish__get_target_pos(fish).x,
+            fish__get_target_pos(fish).y,
+            fish__get_move_duration(fish));
 
         if (n_acc + len < n) {
             strcat(acc, fish_buffer);
