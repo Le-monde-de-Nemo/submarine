@@ -24,48 +24,58 @@ struct figure_t figure__init_figure(int id, struct vec2 pos, struct vec2 size)
 
 // --------------------------------------------------------------------------
 
-int figure__get_id(const struct figure_t* ptr_fig)
+int figure__get_id(const struct figure_t fig)
 {
-    // TODO
-    return 0;
+    return fig.id;
 }
 
 // --------------------------------------------------------------------------
 
-struct vec2 figure__get_current_pos(const struct figure_t* ptr_fig)
+struct vec2 figure__get_current_pos(const struct figure_t fig)
 {
-    // TODO
-    return vec2__zeros();
+    return fig.coordinates;
 }
 
 struct figure_t
-figure__set_current_pos(const struct vec2 pos, const struct figure_t* ptr_fig)
+figure__set_current_pos(const struct vec2 pos, const struct figure_t fig)
 {
-    // TODO
-    return *ptr_fig;
+    struct figure_t new_fig = {
+        .id = fig.id,
+        .coordinates = pos,
+        .size = fig.size,
+    };
+
+    return new_fig;
 }
 
 // --------------------------------------------------------------------------
 
-struct vec2 figure__get_width_height(const struct figure_t* ptr_fig)
+struct vec2 figure__get_width_height(const struct figure_t fig)
 {
-    // TODO
-    return vec2__zeros();
+    return fig.size;
 }
 
 struct figure_t
 figure__set_width_height(const struct vec2 size,
-    const struct figure_t* ptr_fig)
+    const struct figure_t fig)
 {
-    // TODO
-    return *ptr_fig;
+    struct figure_t new_fig = {
+        .id = fig.id,
+        .coordinates = fig.coordinates,
+        .size = size,
+    };
+
+    return new_fig;
 }
 
 // --------------------------------------------------------------------------
 
 int figure__destroy_figure(struct figure_t* ptr_fig)
 {
-    // TODO
+    if (!ptr_fig) {
+        return 1;
+    }
+
     return 1;
 }
 
