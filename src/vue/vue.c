@@ -45,7 +45,7 @@ vue__init_vue(int id, struct vec2 pos, struct vec2 size)
 
 // ----------------------------------------------------------------------
 
-int vue__get_id(const struct vue_t* ptr_vue)
+int vue__get_id(const struct vue_t vue)
 {
     // TODO
     return 0;
@@ -58,17 +58,17 @@ int vue__get_id(const struct vue_t* ptr_vue)
 //          it does not verify if the coordinates are in the aquarium.
 // ----------------------------------------------------------------------
 
-struct vec2 vue__get_current_pos(const struct vue_t* vue)
+struct vec2 vue__get_current_pos(const struct vue_t vue)
 {
     // TODO
     return vec2__zeros();
 }
 
 struct vue_t*
-vue__set_current_pos(const struct vec2 pos, struct vue_t* vue)
+vue__set_current_pos(const struct vec2 pos, struct vue_t vue)
 {
     // TODO
-    return vue;
+    return &vue;
 }
 
 // ----------------------------------------------------------------------
@@ -76,17 +76,17 @@ vue__set_current_pos(const struct vec2 pos, struct vue_t* vue)
 //      By default, the vue is size (1, 1).
 // ----------------------------------------------------------------------
 
-struct vec2 vue__get_width_height(const struct vue_t* vue)
+struct vec2 vue__get_width_height(const struct vue_t vue)
 {
     // TODO
     return vec2__ones();
 }
 
 struct vue_t*
-vue__vue__set_width_height(const struct vec2 pos, struct vue_t* vue)
+vue__set_width_height(const struct vec2 pos, const struct vue_t vue)
 {
     // TODO
-    return vue;
+    return &vue;
 }
 
 // ----------------------------------------------------------------------

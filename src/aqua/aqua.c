@@ -37,7 +37,7 @@ aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_vue, entries)
     {
-        if (np != NULL && vue__get_id(&(np->data)) == id_vue) {
+        if (np != NULL && vue__get_id(np->data) == id_vue) {
             return np;
         }
     }
