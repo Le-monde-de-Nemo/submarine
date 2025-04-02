@@ -180,7 +180,7 @@ int fish__destroy_fish(struct fish_t* ptr_fish)
         return 0;
     }
 
-    // TODO
+    figure__destroy_figure(&(ptr_fish->fig));
     return 0;
 }
 
