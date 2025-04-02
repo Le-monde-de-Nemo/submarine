@@ -29,7 +29,9 @@
 struct aqua_t aqua__init_aqua(struct vec2 size)
 {
     struct aqua_t aqua = {
-        .fig = figure__init_figure(0, vec2__zeros(), size)
+        .fig = figure__init_figure(0, vec2__zeros(), size),
+        .nb_vues = 0,
+        .nb_fishes = 0
     };
 
     SLIST_INIT(&(aqua.list_vues));
@@ -42,8 +44,7 @@ struct aqua_t aqua__init_aqua(struct vec2 size)
 
 int aqua__get_id(const struct aqua_t aqua)
 {
-    // TODO
-    return 0;
+    return figure__get_id(aqua.fig);
 }
 
 // --------------------------------------------------------------------------
@@ -51,8 +52,19 @@ int aqua__get_id(const struct aqua_t aqua)
 struct aqua_t
 aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
-    // TODO
-    return aqua;
+    struct slisthead_fish new_head = aqua.list_fishes;
+    struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
+    SLIST_INSERT_HEAD(&new_head, n2, entries);
+
+    struct aqua_t new_aqua = {
+        .fig = aqua.fig,
+        .list_vues = aqua.list_vues,
+        .nb_vues = aqua.nb_vues,
+        .list_fishes = new_head,
+        .nb_fishes = aqua.nb_fishes + 1
+    };
+
+    return new_aqua;
 }
 
 struct aqua_t
@@ -83,8 +95,7 @@ aqua__get_fishes(const struct aqua_t aqua)
 
 int aqua__get_nb_fishes(const struct aqua_t aqua)
 {
-    // TODO
-    return 0;
+    return aqua.nb_fishes;
 }
 
 // --------------------------------------------------------------------------
@@ -92,7 +103,19 @@ int aqua__get_nb_fishes(const struct aqua_t aqua)
 struct aqua_t
 aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
-    return aqua;
+    struct slisthead_vue new_head = aqua.list_vues;
+    struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
+    SLIST_INSERT_HEAD(&new_head, n1, entries);
+
+    struct aqua_t new_aqua = {
+        .fig = aqua.fig,
+        .list_vues = new_head,
+        .nb_vues = aqua.nb_vues + 1,
+        .list_fishes = aqua.list_fishes,
+        .nb_fishes = aqua.nb_fishes
+    };
+
+    return new_aqua;
 }
 
 struct aqua_t
@@ -118,8 +141,7 @@ aqua__get_vues(const struct aqua_t aqua)
 
 int aqua__get_nb_vues(const struct aqua_t aqua)
 {
-    // TODO
-    return 0;
+    return aqua.nb_vues;
 }
 
 // --------------------------------------------------------------------------
@@ -137,6 +159,7 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
         n1 = SLIST_FIRST(&head_vue);
         SLIST_REMOVE_HEAD(&head_vue, entries);
         free(n1);
+        ptr_aqua->nb_vues -= 1;
     }
 
     // Free the list of fishes.
@@ -146,9 +169,10 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
         n2 = SLIST_FIRST(&head_fish);
         SLIST_REMOVE_HEAD(&head_fish, entries);
         free(n2);
+        ptr_aqua->nb_fishes -= 1;
     }
 
-    return 0;
+    return 1;
 }
 
 // ----------------------------------------------------------------------

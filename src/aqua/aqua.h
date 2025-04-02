@@ -41,7 +41,9 @@ struct aqua_t {
                          // See `src/figure/figure.h`
 
     struct slisthead_vue list_vues;
+    int nb_vues;
     struct slisthead_fish list_fishes;
+    int nb_fishes;
 };
 
 // ----------------------------------------------------------------------
