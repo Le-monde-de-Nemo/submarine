@@ -111,20 +111,40 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
         return aqua;
     }
 
-    // TODO
-    return aqua;
+    // `aqua__find_list_elt_fish` returns NULL if id_fish is not found.
+    struct aqua__entry_fish_t* n1 = aqua__find_list_elt_fish(id_fish, aqua);
+    if (n1 == NULL) {
+        return aqua;
+    }
+
+    struct slisthead_fish new_head = aqua.list_fishes;
+    SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+
+    struct aqua_t new_aqua = {
+        .fig = aqua.fig,
+        .list_vues = aqua.list_vues,
+        .nb_vues = aqua.nb_vues,
+        .list_fishes = new_head,
+        .nb_fishes = aqua.nb_fishes - 1
+    };
+
+    return new_aqua;
 }
 
-struct fish_t
+struct fish_t*
 aqua__get_fish(int id_fish, const struct aqua_t aqua)
 {
-    // TODO
-    struct fish_t fish = fish__init_fish(
-        COMMON,
-        0, vec2__zeros(), vec2__ones(),
-        NULL);
+    if (aqua.nb_fishes <= 0) {
+        return NULL;
+    }
 
-    return fish;
+    // `aqua__find_list_elt_fish` returns NULL if id_fish is not found.
+    struct aqua__entry_fish_t* n1 = aqua__find_list_elt_fish(id_fish, aqua);
+    if (n1 == NULL) {
+        return NULL;
+    }
+
+    return &(n1->data);
 }
 
 struct fish_t*
@@ -162,15 +182,44 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 struct aqua_t
 aqua__del_vue(int id_vue, const struct aqua_t aqua)
 {
-    return aqua;
+    if (aqua.nb_vues <= 0) {
+        return aqua;
+    }
+
+    // `aqua__find_list_elt_vue` returns NULL if id_fish is not found.
+    struct aqua__entry_vue_t* n1 = aqua__find_list_elt_vue(id_vue, aqua);
+    if (n1 == NULL) {
+        return aqua;
+    }
+
+    struct slisthead_vue new_head = aqua.list_vues;
+    SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+
+    struct aqua_t new_aqua = {
+        .fig = aqua.fig,
+        .list_vues = new_head,
+        .nb_vues = aqua.nb_vues - 1,
+        .list_fishes = aqua.list_fishes,
+        .nb_fishes = aqua.nb_fishes
+    };
+
+    return new_aqua;
 }
 
-struct vue_t
+struct vue_t*
 aqua__get_vue(int id_vue, const struct aqua_t aqua)
 {
-    // TODO
-    struct vue_t vue = vue__init_vue(0, vec2__zeros(), vec2__ones());
-    return vue;
+    if (aqua.nb_vues <= 0) {
+        return NULL;
+    }
+
+    // `aqua__find_list_elt_vue` returns NULL if id_fish is not found.
+    struct aqua__entry_vue_t* n1 = aqua__find_list_elt_vue(id_vue, aqua);
+    if (n1 == NULL) {
+        return NULL;
+    }
+
+    return &(n1->data);
 }
 
 struct vue_t*

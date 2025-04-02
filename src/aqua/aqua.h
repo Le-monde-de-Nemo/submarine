@@ -73,7 +73,8 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua);
 struct aqua_t
 aqua__del_fish(int id_fish, const struct aqua_t aqua);
 
-struct fish_t
+/* It returns the ptr of the fish, or NULL if not found. */
+struct fish_t*
 aqua__get_fish(int id_fish, const struct aqua_t aqua);
 
 struct fish_t*
@@ -97,7 +98,8 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua);
 struct aqua_t
 aqua__del_vue(int id_vue, const struct aqua_t aqua);
 
-struct vue_t
+/* It returns the ptr of the fish, or NULL if not found. */
+struct vue_t*
 aqua__get_vue(int id_vue, const struct aqua_t aqua);
 
 struct vue_t*
