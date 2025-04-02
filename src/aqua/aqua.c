@@ -25,6 +25,43 @@
 #include "vue.h"
 
 // --------------------------------------------------------------------------
+// Used to fastly find a fish or a vue in the current list implementation.
+//                                                  See `sys/queue.h`.
+// --------------------------------------------------------------------------
+
+struct aqua__entry_vue_t*
+aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
+{
+    struct aqua__entry_vue_t* np;
+    struct slisthead_vue head_vue = aqua.list_vues;
+
+    SLIST_FOREACH(np, &head_vue, entries)
+    {
+        if (np != NULL && vue__get_id(&(np->data)) == id_vue) {
+            return np;
+        }
+    }
+
+    return NULL;
+}
+
+struct aqua__entry_fish_t*
+aqua__find_list_elt_fish(int id_fish, const struct aqua_t aqua)
+{
+    struct aqua__entry_fish_t* np;
+    struct slisthead_fish head_fish = aqua.list_fishes;
+
+    SLIST_FOREACH(np, &head_fish, entries)
+    {
+        if (np != NULL && fish__get_id(np->data) == id_fish) {
+            return np;
+        }
+    }
+
+    return NULL;
+}
+
+// --------------------------------------------------------------------------
 
 struct aqua_t aqua__init_aqua(struct vec2 size)
 {
@@ -70,6 +107,10 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 struct aqua_t
 aqua__del_fish(int id_fish, const struct aqua_t aqua)
 {
+    if (aqua.nb_fishes <= 0) {
+        return aqua;
+    }
+
     // TODO
     return aqua;
 }
