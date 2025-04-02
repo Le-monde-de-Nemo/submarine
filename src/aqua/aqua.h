@@ -3,9 +3,9 @@
 
 #include "figure.h"
 #include "fish.h"
-#include "list.h"
 #include "vec2.h"
 #include "vue.h"
+#include <sys/queue.h>
 
 // ----------------------------------------------------------------------
 // The header of the aqua(rium).
@@ -15,8 +15,20 @@
 //              - `fish.h`   for the fishes.
 //              - `vue.h`    for the views.
 //              - `figure.h` for the size and the coordinates.
-//              - `list.h`   to store fishes and views.
 // ----------------------------------------------------------------------
+
+/* Struct used by SLIST in `<sys/queue.h>`. */
+struct aqua__entry_fish_t {
+    struct fish_t data;
+    SLIST_ENTRY(aqua__entry_fish_t) entries;
+};
+SLIST_HEAD(slisthead_fish, aqua__entry_fish_t);
+
+struct aqua__entry_vue_t {
+    struct vue_t data;
+    SLIST_ENTRY(aqua__entry_vue_t) entries;
+};
+SLIST_HEAD(slisthead_vue, aqua__entry_vue_t);
 
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
  * However, we want to allocate the fishes on the stack.
@@ -26,8 +38,8 @@ struct aqua_t {
     struct figure_t fig; // id, size and coord of the aquarium.
                          // See `src/figure/figure.h`
 
-    List list_vues;
-    List list_fishes;
+    struct slisthead_vue list_vues;
+    struct slisthead_fish list_fishes;
 };
 
 // ----------------------------------------------------------------------
