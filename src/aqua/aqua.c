@@ -9,13 +9,14 @@
 //
 //      The structure contains:
 //          - a fig, which is the id, the coord and the size of the aqua.
-//          - a list of fishes, using `src/utils/list.h`.
-//          - a list of views, using `src/utils/list.h`.
+//          - a single list of fishes, using `<sys/queue.h>`.
+//          - a single list of views, using `<sys/queue.h>`.
 //              See `src/figure/figure.h`
 // --------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/queue.h>
 
 #include "aqua.h"
 #include "figure.h"
@@ -30,6 +31,9 @@ struct aqua_t aqua__init_aqua(struct vec2 size)
     struct aqua_t aqua = {
         .fig = figure__init_figure(0, vec2__zeros(), size)
     };
+
+    SLIST_INIT(&(aqua.list_vues));
+    SLIST_INIT(&(aqua.list_fishes));
 
     return aqua;
 }
@@ -122,8 +126,29 @@ int aqua__get_nb_vues(const struct aqua_t aqua)
 
 int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
 {
-    // TODO
-    return 1;
+    if (!ptr_aqua) {
+        return 1;
+    }
+
+    // Free the list of vues.
+    struct aqua__entry_vue_t* n1;
+    struct slisthead_vue head_vue = ptr_aqua->list_vues;
+    while (!SLIST_EMPTY(&head_vue)) {
+        n1 = SLIST_FIRST(&head_vue);
+        SLIST_REMOVE_HEAD(&head_vue, entries);
+        free(n1);
+    }
+
+    // Free the list of fishes.
+    struct aqua__entry_fish_t* n2;
+    struct slisthead_fish head_fish = ptr_aqua->list_fishes;
+    while (!SLIST_EMPTY(&head_fish)) {
+        n2 = SLIST_FIRST(&head_fish);
+        SLIST_REMOVE_HEAD(&head_fish, entries);
+        free(n2);
+    }
+
+    return 0;
 }
 
 // ----------------------------------------------------------------------
