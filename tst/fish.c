@@ -62,7 +62,7 @@ int test_fish__init_fish(void)
             );
 
     local_ret |= myassert(
-            fish__is_started(&fish) == 0,
+            fish__is_started(fish) == 0,
             "fish__is_started(fish) should be False(0)\n"
             );
 
@@ -83,21 +83,21 @@ int test_fish__start_fish(void)
 
     /* Stop. */
     local_ret |= myassert(
-            fish__is_started(&fish) == 0,
+            fish__is_started(fish) == 0,
             "fish__is_started(fish) should be False(0)\n"
             );
 
     /* Start. */
     fish = fish__start_fish(fish);
     local_ret |= myassert(
-            fish__is_started(&fish) == 1,
+            fish__is_started(fish) == 1,
             "fish__is_started(fish started) should be True(1)\n"
             );
 
     /* Stop. */
     fish = fish__stop_fish(fish);
     local_ret |= myassert(
-            fish__is_started(&fish) == 0,
+            fish__is_started(fish) == 0,
             "fish__is_started(fish) should be False(0)\n"
             );
 
@@ -121,7 +121,7 @@ int test_fish__set_type(void)
 
     /* When using `specie_disp`. */
     local_ret |= myassert(
-            fish__get_type(fish) == POISSON_ROUGE && \
+            fish__get_type(fish) == POISSON_CLOWN && \
             strcmp(specie__disp(fish__get_type(fish)), "PoissonClown") == 0,
             "fish__get_id(fish__init_fish(P_CLOWN)) should be P_CLOWN\n"
             );

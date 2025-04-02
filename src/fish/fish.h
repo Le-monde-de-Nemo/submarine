@@ -78,7 +78,7 @@ const char* fish__get_mobility_func(const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 
-int fish__is_started(const struct fish_t* ptr_fish);
+int fish__is_started(const struct fish_t fish);
 struct fish_t fish__start_fish(struct fish_t fish);
 struct fish_t fish__stop_fish(struct fish_t fish);
 
