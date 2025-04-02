@@ -8,6 +8,7 @@ src_mains+=${src_dir}/main.c
 # Define here the list of files having main functions in tst directory
 tst_mains+=${tst_dir}/vectors.c
 tst_mains+=${tst_dir}/fish.c
+tst_mains+=${tst_dir}/vue.c
 
 # You shouldn't need to edit what's next
 build_tst_targets=$(patsubst ${tst_dir}/%.c,${build_dir}/%,${tst_mains})
