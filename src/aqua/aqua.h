@@ -20,13 +20,15 @@
 /* Struct used by SLIST in `<sys/queue.h>`. */
 struct aqua__entry_fish_t {
     struct fish_t data;
-    SLIST_ENTRY(aqua__entry_fish_t) entries;
+    SLIST_ENTRY(aqua__entry_fish_t)
+    entries;
 };
 SLIST_HEAD(slisthead_fish, aqua__entry_fish_t);
 
 struct aqua__entry_vue_t {
     struct vue_t data;
-    SLIST_ENTRY(aqua__entry_vue_t) entries;
+    SLIST_ENTRY(aqua__entry_vue_t)
+    entries;
 };
 SLIST_HEAD(slisthead_vue, aqua__entry_vue_t);
 
@@ -75,8 +77,7 @@ aqua__get_fish(int id_fish, const struct aqua_t aqua);
 struct fish_t*
 aqua__get_fishes(const struct aqua_t aqua);
 
-int
-aqua__get_nb_fishes(const struct aqua_t aqua);
+int aqua__get_nb_fishes(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // To manipulate vues in the aquarium.
@@ -100,8 +101,7 @@ aqua__get_vue(int id_vue, const struct aqua_t aqua);
 struct vue_t*
 aqua__get_vues(const struct aqua_t aqua);
 
-int
-aqua__get_nb_vues(const struct aqua_t aqua);
+int aqua__get_nb_vues(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // Remove the allocated area from a aqua(rium) creation.
