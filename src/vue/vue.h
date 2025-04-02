@@ -45,7 +45,7 @@ int vue__get_id(const struct vue_t vue);
 // ----------------------------------------------------------------------
 
 struct vec2 vue__get_current_pos(const struct vue_t vue);
-struct vue_t*
+struct vue_t
 vue__set_current_pos(const struct vec2 pos, const struct vue_t vue);
 
 // ----------------------------------------------------------------------
@@ -54,7 +54,7 @@ vue__set_current_pos(const struct vec2 pos, const struct vue_t vue);
 // ----------------------------------------------------------------------
 
 struct vec2 vue__get_width_height(const struct vue_t vue);
-struct vue_t*
+struct vue_t
 vue__set_width_height(const struct vec2 pos, const struct vue_t vue);
 
 // ----------------------------------------------------------------------

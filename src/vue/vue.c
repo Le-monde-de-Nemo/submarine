@@ -47,8 +47,7 @@ vue__init_vue(int id, struct vec2 pos, struct vec2 size)
 
 int vue__get_id(const struct vue_t vue)
 {
-    // TODO
-    return 0;
+    return figure__get_id(vue.fig);
 }
 
 // ----------------------------------------------------------------------
@@ -60,15 +59,17 @@ int vue__get_id(const struct vue_t vue)
 
 struct vec2 vue__get_current_pos(const struct vue_t vue)
 {
-    // TODO
-    return vec2__zeros();
+    return figure__get_current_pos(vue.fig);
 }
 
-struct vue_t*
+struct vue_t
 vue__set_current_pos(const struct vec2 pos, struct vue_t vue)
 {
-    // TODO
-    return &vue;
+    struct vue_t new_vue = {
+        .fig = figure__set_current_pos(pos, vue.fig),
+    };
+
+    return new_vue;
 }
 
 // ----------------------------------------------------------------------
@@ -78,15 +79,17 @@ vue__set_current_pos(const struct vec2 pos, struct vue_t vue)
 
 struct vec2 vue__get_width_height(const struct vue_t vue)
 {
-    // TODO
-    return vec2__ones();
+    return figure__get_width_height(vue.fig);
 }
 
-struct vue_t*
+struct vue_t
 vue__set_width_height(const struct vec2 pos, const struct vue_t vue)
 {
-    // TODO
-    return &vue;
+    struct vue_t new_vue = {
+        .fig = figure__set_width_height(pos, vue.fig),
+    };
+
+    return new_vue;
 }
 
 // ----------------------------------------------------------------------
@@ -97,7 +100,11 @@ vue__set_width_height(const struct vec2 pos, const struct vue_t vue)
 
 int vue__destroy_vue(struct vue_t* ptr_vue)
 {
-    // TODO
+    if (!ptr_vue) {
+        return 1;
+    }
+
+    figure__destroy_figure(&(ptr_vue->fig));
     return 1;
 }
 
