@@ -150,8 +150,26 @@ aqua__get_fish(int id_fish, const struct aqua_t aqua)
 struct fish_t*
 aqua__get_fishes(const struct aqua_t aqua)
 {
-    // TODO
-    return NULL;
+    if (aqua.nb_fishes <= 0) {
+        return NULL;
+    }
+
+    struct fish_t*
+        array
+        = (struct fish_t*)malloc(aqua.nb_fishes * sizeof(struct fish_t));
+    if (!array) {
+        fprintf(stderr, "Impossible to alloc the array.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    struct slisthead_fish head = aqua.list_fishes;
+    struct aqua__entry_fish_t* np;
+    SLIST_FOREACH(np, &head, entries)
+    {
+        SLIST_INSERT_HEAD(&head, np, entries);
+    }
+
+    return array;
 }
 
 int aqua__get_nb_fishes(const struct aqua_t aqua)
@@ -225,8 +243,26 @@ aqua__get_vue(int id_vue, const struct aqua_t aqua)
 struct vue_t*
 aqua__get_vues(const struct aqua_t aqua)
 {
-    // TODO
-    return NULL;
+    if (aqua.nb_vues <= 0) {
+        return NULL;
+    }
+
+    struct vue_t*
+        array
+        = (struct vue_t*)malloc(aqua.nb_vues * sizeof(struct vue_t));
+    if (!array) {
+        fprintf(stderr, "Impossible to alloc the array.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    struct slisthead_vue head = aqua.list_vues;
+    struct aqua__entry_vue_t* np;
+    SLIST_FOREACH(np, &head, entries)
+    {
+        SLIST_INSERT_HEAD(&head, np, entries);
+    }
+
+    return array;
 }
 
 int aqua__get_nb_vues(const struct aqua_t aqua)

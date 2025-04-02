@@ -77,6 +77,11 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua);
 struct fish_t*
 aqua__get_fish(int id_fish, const struct aqua_t aqua);
 
+/* It returns NULL if there are no fishes.
+ *      The length of the array is `aqua__get_nb_fishes()`.
+ *
+ *                      You will have to free the array once used.
+ */
 struct fish_t*
 aqua__get_fishes(const struct aqua_t aqua);
 
@@ -102,6 +107,11 @@ aqua__del_vue(int id_vue, const struct aqua_t aqua);
 struct vue_t*
 aqua__get_vue(int id_vue, const struct aqua_t aqua);
 
+/* It returns NULL if there are no views.
+ *      The length of the array is `aqua__get_nb_vues()`.
+ *
+ *                  You will have to free the array once used.
+ */
 struct vue_t*
 aqua__get_vues(const struct aqua_t aqua);
 
