@@ -115,7 +115,6 @@ struct fish_t fish__stop_fish(struct fish_t fish)
     };
 
     return new_fish;
-
 }
 
 // --------------------------------------------------------------------------
