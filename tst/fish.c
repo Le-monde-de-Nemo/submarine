@@ -35,7 +35,6 @@ int test_fish__init_fish(void)
 
     int local_ret = 0;
 
-    printf("%d\n", fish__get_id(fish));
     local_ret |= myassert(
         fish__get_id(fish) == 2,
         "fish__get_id(fish__init_fish(id=2)) should be 2\n");

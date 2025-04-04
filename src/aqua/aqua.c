@@ -84,6 +84,11 @@ int aqua__get_id(const struct aqua_t aqua)
     return figure__get_id(aqua.fig);
 }
 
+struct vec2 aqua__get_width_height(const struct aqua_t aqua)
+{
+    return figure__get_width_height(aqua.fig);
+}
+
 // --------------------------------------------------------------------------
 
 struct aqua_t
@@ -162,11 +167,12 @@ aqua__get_fishes(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_fish head = aqua.list_fishes;
     struct aqua__entry_fish_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = np->data;
     }
 
     return array;
@@ -255,11 +261,12 @@ aqua__get_vues(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_vue head = aqua.list_vues;
     struct aqua__entry_vue_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = np->data;
     }
 
     return array;
