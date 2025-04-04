@@ -53,7 +53,7 @@ aqua__find_list_elt_fish(int id_fish, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_fish, entries)
     {
-        if (np != NULL && fish__get_id(np->data) == id_fish) {
+        if (fish__get_id(np->data) == id_fish) {
             return np;
         }
     }
@@ -96,6 +96,7 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     struct slisthead_fish new_head = aqua.list_fishes;
     struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
+    n2->data = fish;
     SLIST_INSERT_HEAD(&new_head, n2, entries);
 
     struct aqua_t new_aqua = {
@@ -124,6 +125,7 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
 
     struct slisthead_fish new_head = aqua.list_fishes;
     SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
