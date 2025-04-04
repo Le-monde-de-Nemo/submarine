@@ -16,7 +16,7 @@ build_tst_targets=$(patsubst ${tst_dir}/%.c,${build_dir}/%,${tst_mains})
 src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/)))
 includes=$(patsubst %,-I%,${src_dirs})
 CFLAGS+=-Wall -g -O0 ${includes}
-LDFLAGS+=-fsanitize=address
+LDFLAGS+=
 
 tsts+=$(wildcard ${tst}/*.c ${src_dir}/**/*.c)
 _tsts=$(filter-out ${tst_mains},${tsts})
