@@ -24,6 +24,10 @@
 #include "vec2.h"
 #include "vue.h"
 
+#ifndef VIEW_CONF_BUF_SIZE
+#define VIEW_CONF_BUF_SIZE 4096
+#endif
+
 // --------------------------------------------------------------------------
 // Used to fastly find a fish or a vue in the current list implementation.
 //                                                  See `sys/queue.h`.
@@ -299,6 +303,59 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     }
 
     return 1;
+}
+
+struct aqua_t aqua__from_file(char* pathname)
+{
+    char read_buf[VIEW_CONF_BUF_SIZE] = {};
+
+    FILE* file = fopen(pathname, "r");
+
+    // Read the dimensions of the aquarium, this is the only required line
+    if (fgets(read_buf, VIEW_CONF_BUF_SIZE, file) == NULL) {
+        fprintf(stderr, "Failed to parse view from file %s\n", pathname);
+        exit(1);
+    }
+
+    int width, height;
+    sscanf(read_buf, "%dx%d", &width, &height);
+    struct aqua_t aqua = aqua__init_aqua(
+        vec2__create(width, height));
+
+    // Iterate through the lines, and get all configured views
+    int id, x, y;
+    while (fgets(read_buf, VIEW_CONF_BUF_SIZE, file) != NULL) {
+        sscanf(read_buf, "N%d %dx%d+%d+%d", &id, &x, &y, &width, &height);
+
+        struct vec2 pos = vec2__create(x, y);
+        struct vec2 size = vec2__create(width, height);
+        struct vue_t vue = vue__init_vue(id, pos, size);
+        aqua = aqua__add_vue(vue, aqua);
+    }
+
+    fclose(file);
+
+    return aqua;
+}
+
+void aqua__save_file(char* pathname, struct aqua_t aqua)
+{
+    FILE* file = fopen(pathname, "w");
+
+    struct vec2 vec = vec2__ones(); // TODO: use aqua__get_size
+    fprintf(file, "%dx%d\n", vec.x, vec.y);
+
+    struct vue_t* vues = aqua__get_vues(aqua);
+    if (vues != NULL)
+        for (int i = 0; i < aqua__get_nb_vues(aqua); ++i) {
+            int id = vue__get_id(vues[i]);
+            struct vec2 size = vue__get_width_height(vues[i]);
+            struct vec2 pos = vue__get_current_pos(vues[i]);
+            fprintf(file, "N%d %dx%d+%d+%d\n", id, pos.x, pos.y, size.x, size.y);
+        }
+
+    free(vues);
+    fclose(file);
 }
 
 // ----------------------------------------------------------------------

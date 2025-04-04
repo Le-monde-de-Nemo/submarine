@@ -1,3 +1,4 @@
+#include "aqua.h"
 #include "controller.h"
 #include "repl.h"
 #include "repl_add_view.h"
@@ -33,6 +34,8 @@
 #endif
 
 #define LHOST_WORKER "127.0.0.1"
+
+static struct aqua_t global_aqua;
 
 static struct pollfd fds[WORKERC];
 // Use poll because they say it's better

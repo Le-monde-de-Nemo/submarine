@@ -1,6 +1,9 @@
 #include "repl_del_view.h"
+#include "aqua.h"
 #include <stdio.h>
 #include <string.h>
+
+static struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_del_view = {
     .match = repl_del_view_match,
@@ -14,7 +17,10 @@ int repl_del_view_match(int argc, char* argv[])
 
 enum _repl_cmd repl_del_view_exec(int argc, char* argv[])
 {
-    printf("exec del_view\n");
-    // Exec del_view or print error if wrong argv
+    int id;
+    sscanf(argv[2], "N%d", &id);
+
+    global_aqua = aqua__del_vue(id, global_aqua);
+
     return ok;
 }

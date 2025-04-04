@@ -126,4 +126,16 @@ int aqua__get_nb_vues(const struct aqua_t aqua);
 int aqua__destroy_aqua(struct aqua_t* ptr_aqua);
 
 // ----------------------------------------------------------------------
+// Read an aqua config from the file located at pathname, and return aqua
+//      The aqua is allocated on the stack.
+//      It returns 0 if it has been done with error.
+// ----------------------------------------------------------------------
+struct aqua_t aqua__from_file(char* pathname);
+
+// ----------------------------------------------------------------------
+// Write an aqua config to the file located at pathname
+// ----------------------------------------------------------------------
+void aqua__save_file(char* pathname, struct aqua_t aqua);
+
+// ----------------------------------------------------------------------
 #endif // __AQUA__H__
