@@ -8,20 +8,35 @@
 #include "repl_save.h"
 #include "repl_show.h"
 #include <arpa/inet.h>
+#include <asm-generic/socket.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+// For async accept
+#include <errno.h>
+#include <fcntl.h>
 
 #ifndef BUFLEN
 #define BUFLEN 2048
 #endif
 
+#ifndef WORKERC
+#define WORKERC 16
+#endif
+
 #define LHOST_WORKER "127.0.0.1"
+
+static struct pollfd fds[WORKERC];
+// Use poll because they say it's better
+static int nfds = 1; // At the beginning, theres only one fd
 
 /* Used by the worker. */
 void error(char* msg)
@@ -30,14 +45,20 @@ void error(char* msg)
     exit(1);
 }
 
-static int exited = 0;
+/*
+ * Global variables
+ */
 
+static int exited = 0;
 static struct controller_t controller;
 
 struct worker_t {
     int socketfd;
 };
 
+/*
+ *  Thread functions
+ */
 void* master(void* args);
 void* worker(void* args);
 
@@ -79,48 +100,90 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void master__finalize()
+{
+}
+
 void* master(void* args)
 {
     pthread_t worker_thread;
 
-    int sockfd, newsockfd, portno, cli_socket_len;
+    socklen_t cli_socket_len;
     struct sockaddr_in serv_addr, cli_addr;
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
         error("ERROR opening socket");
 
-    bzero((char*)&serv_addr, sizeof(serv_addr));
+    // Make the port reusable
+    int enabled = 1;
+    int rc;
+    rc = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+        (char*)&enabled, sizeof(enabled));
+    if (rc < 0) {
+        perror("setsockopt() failed");
+        close(sockfd);
+        exit(-1);
+    }
 
-    portno = controller.port;
+    bzero(&serv_addr, sizeof(serv_addr));
 
     serv_addr.sin_family = AF_INET;
     // serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     inet_pton(AF_INET, LHOST_WORKER, &serv_addr.sin_addr.s_addr);
+
+    int portno = controller.port;
     serv_addr.sin_port = htons(portno);
 
     if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR on bind()");
 
-    while (!exited) {
-        listen(sockfd, 5);
-
-        cli_socket_len = sizeof(cli_addr);
-        newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_socket_len);
-        if (newsockfd < 0)
-            error("ERROR on accept()");
-
-        pthread_create(&worker_thread, NULL, worker, (void*)newsockfd);
+    rc = fcntl(sockfd, F_SETFL, O_NONBLOCK);
+    if (rc < 0) {
+        perror("fcntl() failed");
+        close(sockfd);
+        exit(-1);
     }
 
+    fds[0].fd = sockfd;
+    fds[0].events = POLLIN;
+
+    long timeout = 1000;
+
+    listen(sockfd, 5);
+
+    /*
+     *  Loop accepting connections
+     */
+    while (!exited) {
+        int rc = poll(fds, nfds, timeout);
+        if (rc <= 0) {
+            // No new connection
+            continue;
+        }
+
+        int workerfd = 0;
+        cli_socket_len = sizeof(cli_addr);
+
+        do {
+            printf("accept\n");
+            workerfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_socket_len);
+
+            if (workerfd < 0) {
+                printf("leave\n");
+                break;
+            }
+
+            pthread_create(&worker_thread, NULL, worker, (void*)(long)workerfd);
+        } while (workerfd != EWOULDBLOCK);
+    }
+
+    // Clean up
     close(sockfd);
-    fprintf(stderr, "exited!\n");
+    fprintf(stderr, "Master exited!\n");
+
     return NULL;
 }
-
-//
-// printf("=> read() ? ...");
-// getchar();
-// printf("OK\n");
 
 /*
  * :param args: an integer, it is a file descriptor.
