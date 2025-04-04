@@ -7,6 +7,7 @@
 #include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
+#include "worker.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -39,7 +40,6 @@ struct worker_t {
 };
 
 void* master(void* args);
-void* worker(void* args);
 
 int main(int argc, char* argv[])
 {
@@ -127,29 +127,29 @@ void* master(void* args)
  * `worker` will write in that file descriptor.
  * :return: nothing.
  */
-void* worker(void* args)
-{
-    if (!args) {
-        return NULL;
-    }
+// void* worker(void* args)
+// {
+//     if (!args) {
+//         return NULL;
+//     }
 
-    char buffer[BUFLEN] = {};
-    // bzero(buffer, BUFLEN);
-    int n;
-    int newsockfd = (int)args;
+//     char buffer[BUFLEN] = {};
+//     // bzero(buffer, BUFLEN);
+//     int n;
+//     int newsockfd = (int)args;
 
-    while (!exited) {
-        n = read(newsockfd, buffer, BUFLEN);
-        if (n < 0)
-            error("ERROR reading from socket");
-        printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
+//     while (!exited) {
+//         n = read(newsockfd, buffer, BUFLEN);
+//         if (n < 0)
+//             error("ERROR reading from socket");
+//         printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
 
-        n = write(newsockfd, "I got your message", 18);
-        if (n < 0)
-            error("ERROR writing to socket");
-    }
+//         n = write(newsockfd, "I got your message", 18);
+//         if (n < 0)
+//             error("ERROR writing to socket");
+//     }
 
-    close(newsockfd);
-    fprintf(stderr, "exited!\n");
-    return NULL;
-}
+//     close(newsockfd);
+//     fprintf(stderr, "exited!\n");
+//     return NULL;
+// }
