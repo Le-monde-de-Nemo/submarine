@@ -41,7 +41,8 @@ aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_vue, entries)
     {
-        if (np != NULL && vue__get_id(np->data) == id_vue) {
+
+        if (vue__get_id(np->data) == id_vue) {
             return np;
         }
     }
@@ -57,7 +58,7 @@ aqua__find_list_elt_fish(int id_fish, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_fish, entries)
     {
-        if (np != NULL && fish__get_id(np->data) == id_fish) {
+        if (fish__get_id(np->data) == id_fish) {
             return np;
         }
     }
@@ -88,6 +89,11 @@ int aqua__get_id(const struct aqua_t aqua)
     return figure__get_id(aqua.fig);
 }
 
+struct vec2 aqua__get_width_height(const struct aqua_t aqua)
+{
+    return figure__get_width_height(aqua.fig);
+}
+
 // --------------------------------------------------------------------------
 
 struct aqua_t
@@ -95,6 +101,7 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     struct slisthead_fish new_head = aqua.list_fishes;
     struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
+    n2->data = fish;
     SLIST_INSERT_HEAD(&new_head, n2, entries);
 
     struct aqua_t new_aqua = {
@@ -123,6 +130,7 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
 
     struct slisthead_fish new_head = aqua.list_fishes;
     SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
@@ -166,11 +174,12 @@ aqua__get_fishes(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_fish head = aqua.list_fishes;
     struct aqua__entry_fish_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = np->data;
     }
 
     return array;
@@ -188,6 +197,7 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
     struct slisthead_vue new_head = aqua.list_vues;
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
+    n1->data = vue;
     SLIST_INSERT_HEAD(&new_head, n1, entries);
 
     struct aqua_t new_aqua = {
@@ -216,6 +226,7 @@ aqua__del_vue(int id_vue, const struct aqua_t aqua)
 
     struct slisthead_vue new_head = aqua.list_vues;
     SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
@@ -259,11 +270,12 @@ aqua__get_vues(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_vue head = aqua.list_vues;
     struct aqua__entry_vue_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = np->data;
     }
 
     return array;
