@@ -37,7 +37,7 @@ aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_vue, entries)
     {
-        if (np != NULL && vue__get_id(&(np->data)) == id_vue) {
+        if (vue__get_id(&(np->data)) == id_vue) {
             return np;
         }
     }
@@ -192,6 +192,7 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
     struct slisthead_vue new_head = aqua.list_vues;
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
+    n1->data = vue;
     SLIST_INSERT_HEAD(&new_head, n1, entries);
 
     struct aqua_t new_aqua = {
@@ -220,6 +221,7 @@ aqua__del_vue(int id_vue, const struct aqua_t aqua)
 
     struct slisthead_vue new_head = aqua.list_vues;
     SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
