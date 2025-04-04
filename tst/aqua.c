@@ -174,7 +174,6 @@ int test__aqua_add_vue(void)
     //for (i = 0; i < 100; ++i) {
         //aqua = aqua__del_vue(i + 1, aqua);
 //
-        //printf("%d real: %d\n", i + 1, aqua__get_nb_vues(aqua));
         //local_ret |= myassert(
             //aqua__get_nb_vues(aqua) == 100 - i - 1,
             //"aqua__get_nb_vues(init_aqua - i vue) should be i\n");
