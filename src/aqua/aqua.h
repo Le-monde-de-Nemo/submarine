@@ -58,6 +58,8 @@ struct aqua_t aqua__init_aqua(struct vec2 size);
 
 int aqua__get_id(const struct aqua_t aqua);
 
+struct vec2 aqua__get_width_height(const struct aqua_t aqua);
+
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.
 //      For now, there is no fish limit.
