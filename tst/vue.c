@@ -54,12 +54,14 @@ int test_vue__set_current_pos(void)
     local_ret |= myassert(
         strcmp(cur_pos, "(0, 0)") == 0,
         "vue__get_current_pos(vue__init_vue((0,0))) should be (0,0)\n");
+    vue__disp(stdout, vue);
 
     vue = vue__set_current_pos(vec2__ones(), vue);
     vec2__disp(vue__get_current_pos(vue), cur_pos, VEC2_DISP_BUFFER_SIZE);
     local_ret |= myassert(
         strcmp(cur_pos, "(1, 1)") == 0,
         "vue__get_current_pos(vue__set_vue((1,1))) should be (1,1)\n");
+    vue__disp(stdout, vue);
 
     vue = vue__set_current_pos(
         vec2__sub(vec2__ones(), vue__get_current_pos(vue)),
@@ -68,6 +70,7 @@ int test_vue__set_current_pos(void)
     local_ret |= myassert(
         strcmp(cur_pos, "(0, 0)") == 0,
         "vue__get_current_pos(vue__sub_vue((1,1)-(0,0))) should be (0,0)\n");
+    vue__disp(stdout, vue);
 
     return local_ret;
 }

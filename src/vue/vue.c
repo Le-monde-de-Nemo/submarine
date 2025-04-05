@@ -51,6 +51,25 @@ int vue__get_id(const struct vue_t vue)
 }
 
 // ----------------------------------------------------------------------
+
+void vue__disp(FILE* fd, const struct vue_t vue)
+{
+    int id_vue = figure__get_id(vue.fig);
+    struct vec2 coord = figure__get_current_pos(vue.fig);
+    struct vec2 size = figure__get_width_height(vue.fig);
+
+    size_t s_str = 256;
+    char cars[s_str];
+    snprintf(cars, s_str,
+        "N%d %dx%d+%d+%d\n",
+        id_vue,
+        coord.x, coord.y,
+        size.x, size.y);
+
+    fprintf(fd, cars);
+}
+
+// ----------------------------------------------------------------------
 // To access to the position of the vue.
 //      By default, the vue is at (0, 0).
 //      You can set the vue everywhere.
@@ -107,5 +126,16 @@ int vue__destroy_vue(struct vue_t* ptr_vue)
     figure__destroy_figure(&(ptr_vue->fig));
     return 1;
 }
+
+// ----------------------------------------------------------------------
+
+#ifdef DEBUG_VUE
+int main(int argc, char** argv)
+{
+    struct vue_t vue = vue__init_vue(0, vec2__zeros(), vec2__ones());
+    vue__disp(stdout, vue);
+    return 0;
+}
+#endif // DEBUG_VUE
 
 // ----------------------------------------------------------------------

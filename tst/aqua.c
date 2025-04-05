@@ -1,6 +1,6 @@
 #include "aqua.h"
-#include "fish.h"
 #include "figure.h"
+#include "fish.h"
 #include "vec2.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +67,8 @@ int test__aqua_init_aqua(void)
 int test__aqua_add_fish(void)
 {
     struct aqua_t aqua = aqua__init_aqua(vec2__ones());
-    int local_ret = 0; int i = 0;
+    int local_ret = 0;
+    int i = 0;
 
     for (i = 0; i < 100; ++i) {
         struct fish_t fish = fish__init_fish(
@@ -160,7 +161,8 @@ int test__aqua_add_fish(void)
 int test__aqua_add_vue(void)
 {
     struct aqua_t aqua = aqua__init_aqua(vec2__ones());
-    int local_ret = 0; int i = 0;
+    int local_ret = 0;
+    int i = 0;
 
     for (i = 0; i < 100; ++i) {
         struct vue_t vue = vue__init_vue(i + 1, vec2__zeros(), vec2__ones());
