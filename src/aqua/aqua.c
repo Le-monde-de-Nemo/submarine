@@ -115,6 +115,28 @@ void aqua__disp_vues(FILE* fd, const struct aqua_t aqua)
     }
 }
 
+void aqua__disp_fishes(FILE* fd, const struct aqua_t aqua)
+{
+    struct slisthead_fish head = aqua.list_fishes;
+    struct aqua__entry_fish_t* np;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        fish__disp(1, fd, np->data); // 1 means with EOL `\n`.
+    }
+}
+
+void aqua__disp_fishes_without_eol(FILE* fd, const struct aqua_t aqua)
+{
+    struct slisthead_fish head = aqua.list_fishes;
+    struct aqua__entry_fish_t* np;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        fish__disp(0, fd, np->data); // 1 means without EOL `\n`.
+    }
+}
+
 // --------------------------------------------------------------------------
 
 struct aqua_t

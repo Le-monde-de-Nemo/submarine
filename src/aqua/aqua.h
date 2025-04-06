@@ -79,7 +79,13 @@ struct vec2 aqua__get_width_height(const struct aqua_t aqua);
 
 void aqua__disp(FILE* fd, const struct aqua_t aqua);
 
+/* Call `vue__disp()` for every *vue* in the aqua(rium). */
 void aqua__disp_vues(FILE* fd, const struct aqua_t aqua);
+
+/* Call `fish__disp()` for every *vue* in the aqua(rium). */
+void aqua__disp_fishes(FILE* fd, const struct aqua_t aqua);
+
+void aqua__disp_fishes_without_eol(FILE* fd, const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.

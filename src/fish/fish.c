@@ -138,6 +138,37 @@ fish__set_type(const enum species specie, struct fish_t fish)
 
 // --------------------------------------------------------------------------
 
+void fish__disp(int with_eol, FILE* fd, const struct fish_t fish)
+{
+    int id_fish = figure__get_id(fish.fig);
+    enum species specie_fish = fish.specie;
+    struct vec2 coord = figure__get_current_pos(fish.fig);
+    struct vec2 size = figure__get_width_height(fish.fig);
+
+    size_t s_str = 256;
+    char cars[s_str];
+
+    if (with_eol) {
+        snprintf(cars, s_str,
+            "[%s at %dx%d,%dx%d,%d]\n",
+            species_name[specie_fish],
+            coord.x, coord.y,
+            size.x, size.y,
+            id_fish);
+    } else {
+        snprintf(cars, s_str,
+            "[%s at %dx%d,%dx%d,%d]",
+            species_name[specie_fish],
+            coord.x, coord.y,
+            size.x, size.y,
+            id_fish);
+    }
+
+    fprintf(fd, cars);
+}
+
+// --------------------------------------------------------------------------
+
 struct vec2 fish__get_current_pos(const struct fish_t fish)
 {
     return figure__get_current_pos(fish.fig);

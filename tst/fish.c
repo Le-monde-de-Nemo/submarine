@@ -34,6 +34,7 @@ int test_fish__init_fish(void)
         "RandomWayPoint");
 
     int local_ret = 0;
+    fish__disp(1, stdout, fish);
 
     local_ret |= myassert(
         fish__get_id(fish) == 2,
@@ -71,6 +72,7 @@ int test_fish__start_fish(void)
         "RandomWayPoint");
 
     int local_ret = 0;
+    fish__disp(0, stdout, fish);
 
     /* Stop. */
     local_ret |= myassert(

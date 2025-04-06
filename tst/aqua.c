@@ -70,6 +70,7 @@ int test__aqua_add_fish(void)
     int local_ret = 0;
     int i = 0;
     aqua__disp(stdout, aqua);
+    aqua__disp_fishes(stdout, aqua);
 
     for (i = 0; i < 100; ++i) {
         struct fish_t fish = fish__init_fish(
@@ -84,6 +85,7 @@ int test__aqua_add_fish(void)
             aqua__get_nb_fishes(aqua) == i + 1,
             "aqua__get_nb_fishes(init_aqua + i fish) should be i\n");
     }
+    aqua__disp_fishes(stdout, aqua);
 
     for (i = 0; i < 100; ++i) {
         aqua = aqua__del_fish(i + 1, aqua);
@@ -114,6 +116,7 @@ int test__aqua_add_fish(void)
 
         aqua = aqua__add_fish(fish, aqua);
     }
+    aqua__disp_fishes_without_eol(stdout, aqua);
 
     struct fish_t* fish = aqua__get_fish(50, aqua);
 

@@ -4,6 +4,9 @@
 #include "figure.h"
 #include "vec2.h"
 
+/* To get the type of *FILE*. */
+#include <bits/types/FILE.h>
+
 // ----------------------------------------------------------------------
 // The header of the fish.
 //      See `src/fish/fish.c`.
@@ -89,6 +92,24 @@ struct fish_t fish__stop_fish(struct fish_t fish);
 enum species fish__get_type(const struct fish_t fish);
 struct fish_t
 fish__set_type(const enum species specie, const struct fish_t fish);
+
+// ----------------------------------------------------------------------
+// To display a fish, it uses fprintf, just give the file descriptor.
+//              Format:
+//                  `"[PoissonRouge at fish_xxfish_y,size_xxsize_y,id]"`
+//
+//      For instance:
+//              fd = stdout --> print in stdout, buffered on lines.
+//              fd = stdin  --> print in stderr, buffered on chars.
+//
+//      You can specify if you want the EOL:
+//          with_eol == 1 --> there is `\n` at the end of the format.
+//          with_eol == 0 --> there is not `\n` at the end of the format.
+//
+//                              It does not verify fd!
+// ----------------------------------------------------------------------
+
+void fish__disp(int with_eol, FILE* fd, const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.
