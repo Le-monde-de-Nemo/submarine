@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "figure.h"
 #include "fish.h"
@@ -46,6 +47,22 @@ char* specie__disp(enum species specie)
     }
 
     return species_name[specie];
+}
+
+enum species specie__disp_invert(const char* name_specie)
+{
+    if (!name_specie) {
+        return COMMON;
+    }
+
+    for (int specie = 0; specie < NUM_SPECIES; ++specie) {
+        // specie could be `POISSON_ROUGE`, `POISSON_CLOWN`, etc..
+        if (strcmp(name_specie, species_name[specie]) == 0) {
+            return specie;
+        }
+    }
+
+    return COMMON;
 }
 
 // --------------------------------------------------------------------------

@@ -27,6 +27,16 @@ enum species {
  */
 char* specie__disp(enum species specie);
 
+/* Could give:
+ *
+ *  `PoissonRouge`,
+ *  `PoissonClown`,
+ *  etc..
+ *
+ *          If it does not exist, the fish will be `BasicFish`, COMMON specie.
+ * */
+enum species specie__disp_invert(const char* name_specie);
+
 // ----------------------------------------------------------------------
 
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
