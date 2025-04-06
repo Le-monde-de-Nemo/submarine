@@ -1,6 +1,6 @@
 #include "aqua.h"
-#include "fish.h"
 #include "figure.h"
+#include "fish.h"
 #include "vec2.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +67,13 @@ int test__aqua_init_aqua(void)
 int test__aqua_add_fish(void)
 {
     struct aqua_t aqua = aqua__init_aqua(vec2__ones());
-    int local_ret = 0; int i = 0;
+    int local_ret = 0;
+    int i = 0;
+
+    long n = 4096;
+    char dst[n];
+    printf("%s\n", aqua__disp(aqua, dst, n));
+    printf("%s\n", aqua__disp_fishes(aqua, dst, n));
 
     for (i = 0; i < 100; ++i) {
         struct fish_t fish = fish__init_fish(
@@ -82,6 +88,7 @@ int test__aqua_add_fish(void)
             aqua__get_nb_fishes(aqua) == i + 1,
             "aqua__get_nb_fishes(init_aqua + i fish) should be i\n");
     }
+    printf("%s\n", aqua__disp_fishes(aqua, dst, n));
 
     for (i = 0; i < 100; ++i) {
         aqua = aqua__del_fish(i + 1, aqua);
@@ -112,6 +119,7 @@ int test__aqua_add_fish(void)
 
         aqua = aqua__add_fish(fish, aqua);
     }
+    printf("%s\n", aqua__disp_fishes_without_eol(aqua, dst, n));
 
     struct fish_t* fish = aqua__get_fish(50, aqua);
 
@@ -160,7 +168,12 @@ int test__aqua_add_fish(void)
 int test__aqua_add_vue(void)
 {
     struct aqua_t aqua = aqua__init_aqua(vec2__ones());
-    int local_ret = 0; int i = 0;
+    int local_ret = 0;
+    int i = 0;
+
+    long n = 4096;
+    char dst[n];
+    printf("%s\n", aqua__disp(aqua, dst, n));
 
     for (i = 0; i < 100; ++i) {
         struct vue_t vue = vue__init_vue(i + 1, vec2__zeros(), vec2__ones());
@@ -170,6 +183,7 @@ int test__aqua_add_vue(void)
             aqua__get_nb_vues(aqua) == i + 1,
             "aqua__get_nb_vues(init_aqua + i vue) should be i\n");
     }
+    printf("%s\n", aqua__disp(aqua, dst, n));
 
     for (i = 0; i < 100; ++i) {
         aqua = aqua__del_vue(i + 1, aqua);

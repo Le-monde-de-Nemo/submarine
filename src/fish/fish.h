@@ -27,6 +27,16 @@ enum species {
  */
 char* specie__disp(enum species specie);
 
+/* Could give:
+ *
+ *  `PoissonRouge`,
+ *  `PoissonClown`,
+ *  etc..
+ *
+ *          If it does not exist, the fish will be `BasicFish`, COMMON specie.
+ * */
+enum species specie__disp_invert(const char* name_specie);
+
 // ----------------------------------------------------------------------
 
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
@@ -89,6 +99,24 @@ struct fish_t fish__stop_fish(struct fish_t fish);
 enum species fish__get_type(const struct fish_t fish);
 struct fish_t
 fish__set_type(const enum species specie, const struct fish_t fish);
+
+// ----------------------------------------------------------------------
+// To display a fish, it uses snprintf.
+//              Format:
+//                  `"[PoissonRouge at fish_xxfish_y,size_xxsize_y,id]"`
+//
+//      It writes at most n chars to dst to display *fish*.
+//
+//      You can specify if you want the EOL:
+//          `fish__disp` --> there is `\n` at the end of the format.
+//      `...without_eol` --> there is not `\n` at the end of the format.
+//
+//                                          It returns *dst*.
+// ----------------------------------------------------------------------
+
+char* fish__disp(const struct fish_t fish, char* dst, long n);
+
+char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.

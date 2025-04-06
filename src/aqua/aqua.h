@@ -19,14 +19,14 @@
 
 /* Struct used by SLIST in `<sys/queue.h>`. */
 struct aqua__entry_fish_t {
-    struct fish_t data;
+    struct fish_t* data;
     SLIST_ENTRY(aqua__entry_fish_t)
     entries;
 };
 SLIST_HEAD(slisthead_fish, aqua__entry_fish_t);
 
 struct aqua__entry_vue_t {
-    struct vue_t data;
+    struct vue_t* data;
     SLIST_ENTRY(aqua__entry_vue_t)
     entries;
 };
@@ -59,6 +59,28 @@ struct aqua_t aqua__init_aqua(struct vec2 size);
 int aqua__get_id(const struct aqua_t aqua);
 
 struct vec2 aqua__get_width_height(const struct aqua_t aqua);
+
+// ----------------------------------------------------------------------
+// To display the aqua(rium), it uses snprintf.
+//              Format:
+//                      - format of size, `${width}x${height}\n`
+//                          `${x}` means `1` etc.. , it's an integer.
+//                      - format of vues, see `src/vue/vue.h`.
+//
+//      It writes at most n chars to dst to display *aquarium*.
+//
+//                                          It returns *dst*.
+// ----------------------------------------------------------------------
+
+char* aqua__disp(const struct aqua_t aqua, char* dst, long n);
+
+/* Call `vue__disp()` for every *vue* in the aqua(rium). */
+char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n);
+
+/* Call `fish__disp()` for every *fish* in the aqua(rium). */
+char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n);
+
+char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n);
 
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.
