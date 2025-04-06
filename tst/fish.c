@@ -34,7 +34,10 @@ int test_fish__init_fish(void)
         "RandomWayPoint");
 
     int local_ret = 0;
-    fish__disp(1, stdout, fish);
+
+    long n = 256;
+    char dst[n];
+    printf("%s\n", fish__disp(fish, dst, n));
 
     local_ret |= myassert(
         fish__get_id(fish) == 2,
@@ -72,7 +75,10 @@ int test_fish__start_fish(void)
         "RandomWayPoint");
 
     int local_ret = 0;
-    fish__disp(0, stdout, fish);
+
+    long n = 256;
+    char dst[n];
+    printf("%s", fish__disp_without_eol(fish, dst, n));
 
     /* Stop. */
     local_ret |= myassert(

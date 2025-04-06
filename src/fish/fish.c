@@ -138,33 +138,38 @@ fish__set_type(const enum species specie, struct fish_t fish)
 
 // --------------------------------------------------------------------------
 
-void fish__disp(int with_eol, FILE* fd, const struct fish_t fish)
+char* fish__disp(const struct fish_t fish, char* dst, long n)
 {
     int id_fish = figure__get_id(fish.fig);
     enum species specie_fish = fish.specie;
     struct vec2 coord = figure__get_current_pos(fish.fig);
     struct vec2 size = figure__get_width_height(fish.fig);
 
-    size_t s_str = 256;
-    char cars[s_str];
+    snprintf(dst, n,
+        "[%s at %dx%d,%dx%d,%d]\n",
+        species_name[specie_fish],
+        coord.x, coord.y,
+        size.x, size.y,
+        id_fish);
 
-    if (with_eol) {
-        snprintf(cars, s_str,
-            "[%s at %dx%d,%dx%d,%d]\n",
-            species_name[specie_fish],
-            coord.x, coord.y,
-            size.x, size.y,
-            id_fish);
-    } else {
-        snprintf(cars, s_str,
-            "[%s at %dx%d,%dx%d,%d]",
-            species_name[specie_fish],
-            coord.x, coord.y,
-            size.x, size.y,
-            id_fish);
-    }
+    return dst;
+}
 
-    fprintf(fd, cars);
+char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
+{
+    int id_fish = figure__get_id(fish.fig);
+    enum species specie_fish = fish.specie;
+    struct vec2 coord = figure__get_current_pos(fish.fig);
+    struct vec2 size = figure__get_width_height(fish.fig);
+
+    snprintf(dst, n,
+        "[%s at %dx%d,%dx%d,%d]",
+        species_name[specie_fish],
+        coord.x, coord.y,
+        size.x, size.y,
+        id_fish);
+
+    return dst;
 }
 
 // --------------------------------------------------------------------------
