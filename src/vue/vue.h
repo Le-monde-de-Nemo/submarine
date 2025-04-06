@@ -4,9 +4,6 @@
 #include "figure.h"
 #include "vec2.h"
 
-/* To get the type of *FILE*. */
-#include <bits/types/FILE.h>
-
 // ----------------------------------------------------------------------
 // The header of the vue.
 //      See `src/vue/vue.c`.
@@ -41,18 +38,16 @@ vue__init_vue(int id, struct vec2 pos, struct vec2 size);
 int vue__get_id(const struct vue_t vue);
 
 // ----------------------------------------------------------------------
-// To display a vue, it uses fprintf, just give the file descriptor.
-//              Format: "vue_xxvue_y+vue_width+vue_height\n"
+// To display a vue, it uses snprintf.
+//              Format:
+//                  `"vue_xxvue_y+vue_width+vue_height\n"`
 //
-//      For instance:
-//              fd = stdout --> print in stdout, buffered on lines.
-//              fd = stdin  --> print in stderr, buffered on chars.
+//      It writes at most n chars to dst to display *vue*.
 //
-//
-//                              It does not verify fd!
+//                                          It returns *dst*.
 // ----------------------------------------------------------------------
 
-void vue__disp(FILE* fd, const struct vue_t vue);
+char* vue__disp(const struct vue_t vue, char* dst, long n);
 
 // ----------------------------------------------------------------------
 // To access to the position of the vue.
