@@ -22,14 +22,14 @@
 
 /* Struct used by SLIST in `<sys/queue.h>`. */
 struct aqua__entry_fish_t {
-    struct fish_t data;
+    struct fish_t* data;
     SLIST_ENTRY(aqua__entry_fish_t)
     entries;
 };
 SLIST_HEAD(slisthead_fish, aqua__entry_fish_t);
 
 struct aqua__entry_vue_t {
-    struct vue_t data;
+    struct vue_t* data;
     SLIST_ENTRY(aqua__entry_vue_t)
     entries;
 };

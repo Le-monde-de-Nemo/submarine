@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/queue.h>
 
 #include "aqua.h"
@@ -38,7 +39,7 @@ aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
     SLIST_FOREACH(np, &head_vue, entries)
     {
 
-        if (vue__get_id(np->data) == id_vue) {
+        if (vue__get_id(*(np->data)) == id_vue) {
             return np;
         }
     }
@@ -54,7 +55,7 @@ aqua__find_list_elt_fish(int id_fish, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_fish, entries)
     {
-        if (fish__get_id(np->data) == id_fish) {
+        if (fish__get_id(*(np->data)) == id_fish) {
             return np;
         }
     }
@@ -111,7 +112,7 @@ void aqua__disp_vues(FILE* fd, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head, entries)
     {
-        vue__disp(fd, np->data);
+        vue__disp(fd, *(np->data));
     }
 }
 
@@ -122,7 +123,7 @@ void aqua__disp_fishes(FILE* fd, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head, entries)
     {
-        fish__disp(1, fd, np->data); // 1 means with EOL `\n`.
+        fish__disp(1, fd, *(np->data)); // 1 means with EOL `\n`.
     }
 }
 
@@ -133,8 +134,10 @@ void aqua__disp_fishes_without_eol(FILE* fd, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head, entries)
     {
-        fish__disp(0, fd, np->data); // 1 means without EOL `\n`.
+        fish__disp(0, fd, *(np->data)); // 1 means without EOL `\n`.
+        fprintf(fd, " ");
     }
+    fprintf(fd, "\n");
 }
 
 // --------------------------------------------------------------------------
@@ -144,7 +147,16 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     struct slisthead_fish new_head = aqua.list_fishes;
     struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
-    n2->data = fish;
+
+    // <fish copy>, copied on the heap.
+    n2->data = (struct fish_t*)malloc(sizeof(struct fish_t));
+    if (!(n2->data)) {
+        fprintf(stderr, "Impossible to alloc the fish.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(n2->data, &fish, sizeof(struct fish_t));
+    // </fish copy done>.
+
     SLIST_INSERT_HEAD(&new_head, n2, entries);
 
     struct aqua_t new_aqua = {
@@ -173,6 +185,7 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
 
     struct slisthead_fish new_head = aqua.list_fishes;
     SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+    free(n1->data); // Fish is copied outside the stack.
     free(n1);
 
     struct aqua_t new_aqua = {
@@ -199,7 +212,7 @@ aqua__get_fish(int id_fish, const struct aqua_t aqua)
         return NULL;
     }
 
-    return &(n1->data);
+    return n1->data;
 }
 
 struct fish_t*
@@ -222,7 +235,7 @@ aqua__get_fishes(const struct aqua_t aqua)
     struct aqua__entry_fish_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        array[index_array++] = np->data;
+        array[index_array++] = *(np->data);
     }
 
     return array;
@@ -240,7 +253,16 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
     struct slisthead_vue new_head = aqua.list_vues;
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
-    n1->data = vue;
+
+    // <vue copy>, copied on the heap.
+    n1->data = (struct vue_t*)malloc(sizeof(struct vue_t));
+    if (!(n1->data)) {
+        fprintf(stderr, "Impossible to alloc the vue.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(n1->data, &vue, sizeof(struct vue_t));
+    // </vue copy done>.
+
     SLIST_INSERT_HEAD(&new_head, n1, entries);
 
     struct aqua_t new_aqua = {
@@ -269,6 +291,7 @@ aqua__del_vue(int id_vue, const struct aqua_t aqua)
 
     struct slisthead_vue new_head = aqua.list_vues;
     SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+    free(n1->data); // Vue is copied outside the stack.
     free(n1);
 
     struct aqua_t new_aqua = {
@@ -295,7 +318,7 @@ aqua__get_vue(int id_vue, const struct aqua_t aqua)
         return NULL;
     }
 
-    return &(n1->data);
+    return n1->data;
 }
 
 struct vue_t*
@@ -318,7 +341,7 @@ aqua__get_vues(const struct aqua_t aqua)
     struct aqua__entry_vue_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        array[index_array++] = np->data;
+        array[index_array++] = *(np->data);
     }
 
     return array;
@@ -343,6 +366,7 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     while (!SLIST_EMPTY(&head_vue)) {
         n1 = SLIST_FIRST(&head_vue);
         SLIST_REMOVE_HEAD(&head_vue, entries);
+        free(n1->data);
         free(n1);
         ptr_aqua->nb_vues -= 1;
     }
@@ -353,6 +377,7 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     while (!SLIST_EMPTY(&head_fish)) {
         n2 = SLIST_FIRST(&head_fish);
         SLIST_REMOVE_HEAD(&head_fish, entries);
+        free(n2->data);
         free(n2);
         ptr_aqua->nb_fishes -= 1;
     }
