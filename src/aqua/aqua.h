@@ -7,6 +7,9 @@
 #include "vue.h"
 #include <sys/queue.h>
 
+/* To get the type of *FILE*. */
+#include <bits/types/FILE.h>
+
 // ----------------------------------------------------------------------
 // The header of the aqua(rium).
 //      See `src/aqua/aqua.c`.
@@ -59,6 +62,24 @@ struct aqua_t aqua__init_aqua(struct vec2 size);
 int aqua__get_id(const struct aqua_t aqua);
 
 struct vec2 aqua__get_width_height(const struct aqua_t aqua);
+
+// ----------------------------------------------------------------------
+// To display an aqua(rium), it uses fprintf, just give the fd.
+//              Format:
+//                      - format of size, `${width}x${height}\n`
+//                          `${x}` means `1` etc.. , it's an integer.
+//                      - format of vues, see `src/vue/vue.h`.
+//
+//      For instance:
+//              fd = stdout --> print in stdout, buffered on lines.
+//              fd = stdin  --> print in stderr, buffered on chars.
+//
+//                              It does not verify fd!
+// ----------------------------------------------------------------------
+
+void aqua__disp(FILE* fd, const struct aqua_t aqua);
+
+void aqua__disp_vues(FILE* fd, const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.

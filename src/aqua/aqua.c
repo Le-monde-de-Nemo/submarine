@@ -92,6 +92,31 @@ struct vec2 aqua__get_width_height(const struct aqua_t aqua)
 
 // --------------------------------------------------------------------------
 
+void aqua__disp(FILE* fd, const struct aqua_t aqua)
+{
+    struct vec2 size = figure__get_width_height(aqua.fig);
+
+    size_t s_str = 256;
+    char cars[s_str];
+    snprintf(cars, s_str, "%dx%d\n", size.x, size.y);
+
+    fprintf(fd, cars);
+    aqua__disp_vues(fd, aqua);
+}
+
+void aqua__disp_vues(FILE* fd, const struct aqua_t aqua)
+{
+    struct slisthead_vue head = aqua.list_vues;
+    struct aqua__entry_vue_t* np;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        vue__disp(fd, np->data);
+    }
+}
+
+// --------------------------------------------------------------------------
+
 struct aqua_t
 aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
