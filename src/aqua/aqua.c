@@ -463,7 +463,7 @@ void aqua__save_file(char* pathname, struct aqua_t aqua)
 {
     FILE* file = fopen(pathname, "w");
 
-    struct vec2 vec = vec2__ones(); // TODO: use aqua__get_size
+    struct vec2 vec = aqua__get_width_height(aqua);
     fprintf(file, "%dx%d\n", vec.x, vec.y);
 
     struct vue_t* vues = aqua__get_vues(aqua);

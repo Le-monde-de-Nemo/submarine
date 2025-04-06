@@ -5,7 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 
-static struct aqua_t global_aqua;
+#define REPL_LOAD_BUFLEN 2048
+
+extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_load = {
     .match = repl_load_match,
@@ -29,6 +31,14 @@ enum _repl_cmd repl_load_exec(int argc, char* argv[])
         return ok;
     }
 
+    aqua__destroy_aqua(&global_aqua);
+
     global_aqua = aqua__from_file(argv[1]);
+
+    printf("Loaded:\n");
+
+    char buf[REPL_LOAD_BUFLEN] = {};
+    aqua__disp(global_aqua, buf, REPL_LOAD_BUFLEN);
+    printf("%s\n", buf);
     return ok;
 }

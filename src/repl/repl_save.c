@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static struct aqua_t global_aqua;
+extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_save = {
     .match = repl_save_match,
@@ -23,5 +23,6 @@ enum _repl_cmd repl_save_exec(int argc, char* argv[])
     }
 
     aqua__save_file(argv[1], global_aqua);
+    printf("Saved to file %s\n", argv[1]);
     return ok;
 }

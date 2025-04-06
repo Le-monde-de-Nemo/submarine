@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static struct aqua_t global_aqua;
+extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_add_view = {
     .match = repl_add_view_match,
