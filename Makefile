@@ -46,7 +46,7 @@ ${build_dir}/%.o: %.c
 
 .PHONY: test
 test: build_test
-	($(patsubst %,% &,${build_tst_targets}) wait) | sort
+	($(patsubst %,% &,${build_tst_targets}) wait) # | sort
 
 .PHONY:
 build_test: ${build_tst_targets}
