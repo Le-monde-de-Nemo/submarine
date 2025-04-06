@@ -7,9 +7,6 @@
 #include "vue.h"
 #include <sys/queue.h>
 
-/* To get the type of *FILE*. */
-#include <bits/types/FILE.h>
-
 // ----------------------------------------------------------------------
 // The header of the aqua(rium).
 //      See `src/aqua/aqua.c`.
@@ -64,28 +61,26 @@ int aqua__get_id(const struct aqua_t aqua);
 struct vec2 aqua__get_width_height(const struct aqua_t aqua);
 
 // ----------------------------------------------------------------------
-// To display an aqua(rium), it uses fprintf, just give the fd.
+// To display the aqua(rium), it uses snprintf.
 //              Format:
 //                      - format of size, `${width}x${height}\n`
 //                          `${x}` means `1` etc.. , it's an integer.
 //                      - format of vues, see `src/vue/vue.h`.
 //
-//      For instance:
-//              fd = stdout --> print in stdout, buffered on lines.
-//              fd = stdin  --> print in stderr, buffered on chars.
+//      It writes at most n chars to dst to display *aquarium*.
 //
-//                              It does not verify fd!
+//                                          It returns *dst*.
 // ----------------------------------------------------------------------
 
-void aqua__disp(FILE* fd, const struct aqua_t aqua);
+char* aqua__disp(const struct aqua_t aqua, char* dst, long n);
 
 /* Call `vue__disp()` for every *vue* in the aqua(rium). */
-void aqua__disp_vues(FILE* fd, const struct aqua_t aqua);
+char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n);
 
-/* Call `fish__disp()` for every *vue* in the aqua(rium). */
-void aqua__disp_fishes(FILE* fd, const struct aqua_t aqua);
+/* Call `fish__disp()` for every *fish* in the aqua(rium). */
+char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n);
 
-void aqua__disp_fishes_without_eol(FILE* fd, const struct aqua_t aqua);
+char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n);
 
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.

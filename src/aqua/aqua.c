@@ -93,51 +93,88 @@ struct vec2 aqua__get_width_height(const struct aqua_t aqua)
 
 // --------------------------------------------------------------------------
 
-void aqua__disp(FILE* fd, const struct aqua_t aqua)
+char* aqua__disp(const struct aqua_t aqua, char* dst, long n)
 {
     struct vec2 size = figure__get_width_height(aqua.fig);
+    int res = snprintf(dst, n, "%dx%d\n", size.x, size.y);
 
-    size_t s_str = 256;
-    char cars[s_str];
-    snprintf(cars, s_str, "%dx%d\n", size.x, size.y);
+    if (res < 0 || n <= res) {
+        return dst;
+    }
 
-    fprintf(fd, cars);
-    aqua__disp_vues(fd, aqua);
+    long size_printed = res;
+    aqua__disp_vues(aqua, dst + size_printed, n - size_printed);
+
+    return dst;
 }
 
-void aqua__disp_vues(FILE* fd, const struct aqua_t aqua)
+char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n)
 {
     struct slisthead_vue head = aqua.list_vues;
     struct aqua__entry_vue_t* np;
+    long written = 0;
 
     SLIST_FOREACH(np, &head, entries)
     {
-        vue__disp(fd, *(np->data));
+        char cars_vue[256];
+        vue__disp(*(np->data), cars_vue, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_vue);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
     }
+
+    return dst;
 }
 
-void aqua__disp_fishes(FILE* fd, const struct aqua_t aqua)
+char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n)
 {
     struct slisthead_fish head = aqua.list_fishes;
     struct aqua__entry_fish_t* np;
+    long written = 0;
 
     SLIST_FOREACH(np, &head, entries)
     {
-        fish__disp(1, fd, *(np->data)); // 1 means with EOL `\n`.
+        char cars_fish[256];
+        fish__disp(*(np->data), cars_fish, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_fish);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
     }
+
+    return dst;
 }
 
-void aqua__disp_fishes_without_eol(FILE* fd, const struct aqua_t aqua)
+char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n)
 {
     struct slisthead_fish head = aqua.list_fishes;
     struct aqua__entry_fish_t* np;
+    long written = 0;
 
     SLIST_FOREACH(np, &head, entries)
     {
-        fish__disp(0, fd, *(np->data)); // 1 means without EOL `\n`.
-        fprintf(fd, " ");
+        char cars_fish[256];
+        fish__disp_without_eol(*(np->data), cars_fish, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_fish);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
     }
-    fprintf(fd, "\n");
+
+    return dst;
 }
 
 // --------------------------------------------------------------------------
