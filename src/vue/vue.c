@@ -3,12 +3,14 @@
 //      See `/src/vue/vue.h`.
 //      Dependencies:
 //              - `vec2.h` for the coordinates, and sizes.
-//              - `figure.h` for the id, the pos and the size of a fish.
+//              - `figure.h` for the id, the pos and the size of a vue.
 //
 //      The structure contains:
 //          - a fig, which is the id, the pos and the size of the vue.
 //              See `src/figure/figure.h`
 // --------------------------------------------------------------------------
+
+#include <string.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +50,23 @@ vue__init_vue(int id, struct vec2 pos, struct vec2 size)
 int vue__get_id(const struct vue_t vue)
 {
     return figure__get_id(vue.fig);
+}
+
+// ----------------------------------------------------------------------
+
+char* vue__disp(const struct vue_t vue, char* dst, long n)
+{
+    int id_vue = figure__get_id(vue.fig);
+    struct vec2 coord = figure__get_current_pos(vue.fig);
+    struct vec2 size = figure__get_width_height(vue.fig);
+
+    snprintf(dst, n,
+        "N%d %dx%d+%d+%d\n",
+        id_vue,
+        coord.x, coord.y,
+        size.x, size.y);
+
+    return dst;
 }
 
 // ----------------------------------------------------------------------
@@ -93,8 +112,8 @@ vue__set_width_height(const struct vec2 pos, const struct vue_t vue)
 }
 
 // ----------------------------------------------------------------------
-// Remove the allocated area from a fish creation.
-//      The fish is allocated on the stack.
+// Remove the allocated area from a vue creation.
+//      The vue is allocated on the stack.
 //      It returns 0 if it has been done with error.
 // ----------------------------------------------------------------------
 
@@ -107,5 +126,16 @@ int vue__destroy_vue(struct vue_t* ptr_vue)
     figure__destroy_figure(&(ptr_vue->fig));
     return 1;
 }
+
+// ----------------------------------------------------------------------
+
+#ifdef DEBUG_VUE
+int main(int argc, char** argv)
+{
+    struct vue_t vue = vue__init_vue(0, vec2__zeros(), vec2__ones());
+    vue__disp(stdout, vue);
+    return 0;
+}
+#endif // DEBUG_VUE
 
 // ----------------------------------------------------------------------

@@ -1,6 +1,9 @@
 #include "repl_save.h"
+#include "aqua.h"
 #include <stdio.h>
 #include <string.h>
+
+extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_save = {
     .match = repl_save_match,
@@ -14,7 +17,12 @@ int repl_save_match(int argc, char* argv[])
 
 enum _repl_cmd repl_save_exec(int argc, char* argv[])
 {
-    printf("exec save\n");
-    // Exec save or print error if wrong argv
+    if (argc <= 1) {
+        fprintf(stderr, "Usage: load <aquarium pathname>\n");
+        return ok;
+    }
+
+    aqua__save_file(argv[1], global_aqua);
+    printf("Saved to file %s\n", argv[1]);
     return ok;
 }

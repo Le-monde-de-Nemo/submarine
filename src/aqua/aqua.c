@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/queue.h>
 
 #include "aqua.h"
@@ -23,6 +24,10 @@
 #include "fish.h"
 #include "vec2.h"
 #include "vue.h"
+
+#ifndef VIEW_CONF_BUF_SIZE
+#define VIEW_CONF_BUF_SIZE 4096
+#endif
 
 // --------------------------------------------------------------------------
 // Used to fastly find a fish or a vue in the current list implementation.
@@ -37,7 +42,8 @@ aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_vue, entries)
     {
-        if (np != NULL && vue__get_id(np->data) == id_vue) {
+
+        if (vue__get_id(*(np->data)) == id_vue) {
             return np;
         }
     }
@@ -53,7 +59,7 @@ aqua__find_list_elt_fish(int id_fish, const struct aqua_t aqua)
 
     SLIST_FOREACH(np, &head_fish, entries)
     {
-        if (np != NULL && fish__get_id(np->data) == id_fish) {
+        if (fish__get_id(*(np->data)) == id_fish) {
             return np;
         }
     }
@@ -84,6 +90,97 @@ int aqua__get_id(const struct aqua_t aqua)
     return figure__get_id(aqua.fig);
 }
 
+struct vec2 aqua__get_width_height(const struct aqua_t aqua)
+{
+    return figure__get_width_height(aqua.fig);
+}
+
+// --------------------------------------------------------------------------
+
+char* aqua__disp(const struct aqua_t aqua, char* dst, long n)
+{
+    struct vec2 size = figure__get_width_height(aqua.fig);
+    int res = snprintf(dst, n, "%dx%d\n", size.x, size.y);
+
+    if (res < 0 || n <= res) {
+        return dst;
+    }
+
+    long size_printed = res;
+    aqua__disp_vues(aqua, dst + size_printed, n - size_printed);
+
+    return dst;
+}
+
+char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n)
+{
+    struct slisthead_vue head = aqua.list_vues;
+    struct aqua__entry_vue_t* np;
+    long written = 0;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        char cars_vue[256];
+        vue__disp(*(np->data), cars_vue, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_vue);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
+    }
+
+    return dst;
+}
+
+char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n)
+{
+    struct slisthead_fish head = aqua.list_fishes;
+    struct aqua__entry_fish_t* np;
+    long written = 0;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        char cars_fish[256];
+        fish__disp(*(np->data), cars_fish, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_fish);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
+    }
+
+    return dst;
+}
+
+char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n)
+{
+    struct slisthead_fish head = aqua.list_fishes;
+    struct aqua__entry_fish_t* np;
+    long written = 0;
+
+    SLIST_FOREACH(np, &head, entries)
+    {
+        char cars_fish[256];
+        fish__disp_without_eol(*(np->data), cars_fish, 256);
+
+        int res = snprintf(dst + written, n - written, "%s", cars_fish);
+        if (res < 0 || res >= (n - written)) {
+            // res < 0 means characters have not been written, including `\0`.
+            return dst;
+        }
+
+        written += res;
+    }
+
+    return dst;
+}
+
 // --------------------------------------------------------------------------
 
 struct aqua_t
@@ -91,6 +188,16 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     struct slisthead_fish new_head = aqua.list_fishes;
     struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
+
+    // <fish copy>, copied on the heap.
+    n2->data = (struct fish_t*)malloc(sizeof(struct fish_t));
+    if (!(n2->data)) {
+        fprintf(stderr, "Impossible to alloc the fish.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(n2->data, &fish, sizeof(struct fish_t));
+    // </fish copy done>.
+
     SLIST_INSERT_HEAD(&new_head, n2, entries);
 
     struct aqua_t new_aqua = {
@@ -119,6 +226,8 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
 
     struct slisthead_fish new_head = aqua.list_fishes;
     SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+    free(n1->data); // Fish is copied outside the stack.
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
@@ -144,7 +253,7 @@ aqua__get_fish(int id_fish, const struct aqua_t aqua)
         return NULL;
     }
 
-    return &(n1->data);
+    return n1->data;
 }
 
 struct fish_t*
@@ -162,11 +271,12 @@ aqua__get_fishes(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_fish head = aqua.list_fishes;
     struct aqua__entry_fish_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = *(np->data);
     }
 
     return array;
@@ -184,6 +294,16 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
     struct slisthead_vue new_head = aqua.list_vues;
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
+
+    // <vue copy>, copied on the heap.
+    n1->data = (struct vue_t*)malloc(sizeof(struct vue_t));
+    if (!(n1->data)) {
+        fprintf(stderr, "Impossible to alloc the vue.\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(n1->data, &vue, sizeof(struct vue_t));
+    // </vue copy done>.
+
     SLIST_INSERT_HEAD(&new_head, n1, entries);
 
     struct aqua_t new_aqua = {
@@ -212,6 +332,8 @@ aqua__del_vue(int id_vue, const struct aqua_t aqua)
 
     struct slisthead_vue new_head = aqua.list_vues;
     SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+    free(n1->data); // Vue is copied outside the stack.
+    free(n1);
 
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
@@ -237,7 +359,7 @@ aqua__get_vue(int id_vue, const struct aqua_t aqua)
         return NULL;
     }
 
-    return &(n1->data);
+    return n1->data;
 }
 
 struct vue_t*
@@ -255,11 +377,12 @@ aqua__get_vues(const struct aqua_t aqua)
         exit(EXIT_FAILURE);
     }
 
+    int index_array = 0;
     struct slisthead_vue head = aqua.list_vues;
     struct aqua__entry_vue_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
-        SLIST_INSERT_HEAD(&head, np, entries);
+        array[index_array++] = *(np->data);
     }
 
     return array;
@@ -284,6 +407,7 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     while (!SLIST_EMPTY(&head_vue)) {
         n1 = SLIST_FIRST(&head_vue);
         SLIST_REMOVE_HEAD(&head_vue, entries);
+        free(n1->data);
         free(n1);
         ptr_aqua->nb_vues -= 1;
     }
@@ -294,11 +418,65 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     while (!SLIST_EMPTY(&head_fish)) {
         n2 = SLIST_FIRST(&head_fish);
         SLIST_REMOVE_HEAD(&head_fish, entries);
+        free(n2->data);
         free(n2);
         ptr_aqua->nb_fishes -= 1;
     }
 
     return 1;
+}
+
+struct aqua_t aqua__from_file(char* pathname)
+{
+    char read_buf[VIEW_CONF_BUF_SIZE] = {};
+
+    FILE* file = fopen(pathname, "r");
+
+    // Read the dimensions of the aquarium, this is the only required line
+    if (fgets(read_buf, VIEW_CONF_BUF_SIZE, file) == NULL) {
+        fprintf(stderr, "Failed to parse view from file %s\n", pathname);
+        exit(1);
+    }
+
+    int width, height;
+    sscanf(read_buf, "%dx%d", &width, &height);
+    struct aqua_t aqua = aqua__init_aqua(
+        vec2__create(width, height));
+
+    // Iterate through the lines, and get all configured views
+    int id, x, y;
+    while (fgets(read_buf, VIEW_CONF_BUF_SIZE, file) != NULL) {
+        sscanf(read_buf, "N%d %dx%d+%d+%d", &id, &x, &y, &width, &height);
+
+        struct vec2 pos = vec2__create(x, y);
+        struct vec2 size = vec2__create(width, height);
+        struct vue_t vue = vue__init_vue(id, pos, size);
+        aqua = aqua__add_vue(vue, aqua);
+    }
+
+    fclose(file);
+
+    return aqua;
+}
+
+void aqua__save_file(char* pathname, struct aqua_t aqua)
+{
+    FILE* file = fopen(pathname, "w");
+
+    struct vec2 vec = aqua__get_width_height(aqua);
+    fprintf(file, "%dx%d\n", vec.x, vec.y);
+
+    struct vue_t* vues = aqua__get_vues(aqua);
+    if (vues != NULL)
+        for (int i = 0; i < aqua__get_nb_vues(aqua); ++i) {
+            int id = vue__get_id(vues[i]);
+            struct vec2 size = vue__get_width_height(vues[i]);
+            struct vec2 pos = vue__get_current_pos(vues[i]);
+            fprintf(file, "N%d %dx%d+%d+%d\n", id, pos.x, pos.y, size.x, size.y);
+        }
+
+    free(vues);
+    fclose(file);
 }
 
 // ----------------------------------------------------------------------

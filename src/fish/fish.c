@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "figure.h"
 #include "fish.h"
@@ -46,6 +47,22 @@ char* specie__disp(enum species specie)
     }
 
     return species_name[specie];
+}
+
+enum species specie__disp_invert(const char* name_specie)
+{
+    if (!name_specie) {
+        return COMMON;
+    }
+
+    for (int specie = 0; specie < NUM_SPECIES; ++specie) {
+        // specie could be `POISSON_ROUGE`, `POISSON_CLOWN`, etc..
+        if (strcmp(name_specie, species_name[specie]) == 0) {
+            return specie;
+        }
+    }
+
+    return COMMON;
 }
 
 // --------------------------------------------------------------------------
@@ -134,6 +151,42 @@ fish__set_type(const enum species specie, struct fish_t fish)
     }
 
     return fish;
+}
+
+// --------------------------------------------------------------------------
+
+char* fish__disp(const struct fish_t fish, char* dst, long n)
+{
+    int id_fish = figure__get_id(fish.fig);
+    enum species specie_fish = fish.specie;
+    struct vec2 coord = figure__get_current_pos(fish.fig);
+    struct vec2 size = figure__get_width_height(fish.fig);
+
+    snprintf(dst, n,
+        "[%s at %dx%d,%dx%d,%d]\n",
+        species_name[specie_fish],
+        coord.x, coord.y,
+        size.x, size.y,
+        id_fish);
+
+    return dst;
+}
+
+char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
+{
+    int id_fish = figure__get_id(fish.fig);
+    enum species specie_fish = fish.specie;
+    struct vec2 coord = figure__get_current_pos(fish.fig);
+    struct vec2 size = figure__get_width_height(fish.fig);
+
+    snprintf(dst, n,
+        "[%s at %dx%d,%dx%d,%d]",
+        species_name[specie_fish],
+        coord.x, coord.y,
+        size.x, size.y,
+        id_fish);
+
+    return dst;
 }
 
 // --------------------------------------------------------------------------

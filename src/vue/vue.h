@@ -38,6 +38,18 @@ vue__init_vue(int id, struct vec2 pos, struct vec2 size);
 int vue__get_id(const struct vue_t vue);
 
 // ----------------------------------------------------------------------
+// To display a vue, it uses snprintf.
+//              Format:
+//                  `"vue_xxvue_y+vue_width+vue_height\n"`
+//
+//      It writes at most n chars to dst to display *vue*.
+//
+//                                          It returns *dst*.
+// ----------------------------------------------------------------------
+
+char* vue__disp(const struct vue_t vue, char* dst, long n);
+
+// ----------------------------------------------------------------------
 // To access to the position of the vue.
 //      By default, the vue is at (0, 0).
 //      You can set the vue everywhere.

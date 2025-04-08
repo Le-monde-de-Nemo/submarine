@@ -35,6 +35,10 @@ int test_fish__init_fish(void)
 
     int local_ret = 0;
 
+    long n = 256;
+    char dst[n];
+    printf("%s\n", fish__disp(fish, dst, n));
+
     local_ret |= myassert(
         fish__get_id(fish) == 2,
         "fish__get_id(fish__init_fish(id=2)) should be 2\n");
@@ -43,6 +47,11 @@ int test_fish__init_fish(void)
     local_ret |= myassert(
         fish__get_type(fish) == POISSON_ROUGE && strcmp(specie__disp(fish__get_type(fish)), "PoissonRouge") == 0,
         "fish__get_id(fish__init_fish(P_ROUGE)) should be P_ROUGE\n");
+
+    /* When using `specie_disp_invert`. */
+    local_ret |= myassert(
+        fish__get_type(fish) == POISSON_ROUGE && specie__disp_invert("PoissonRouge") == fish__get_type(fish),
+        "fish__get_id(fish__init_fish(P_ROUGE)) should be P_ROUGE invert\n");
 
     char cur_pos[VEC2_DISP_BUFFER_SIZE];
     vec2__disp(fish__get_current_pos(fish), cur_pos, VEC2_DISP_BUFFER_SIZE);
@@ -71,6 +80,10 @@ int test_fish__start_fish(void)
         "RandomWayPoint");
 
     int local_ret = 0;
+
+    long n = 256;
+    char dst[n];
+    printf("%s", fish__disp_without_eol(fish, dst, n));
 
     /* Stop. */
     local_ret |= myassert(
@@ -110,6 +123,11 @@ int test_fish__set_type(void)
     local_ret |= myassert(
         fish__get_type(fish) == POISSON_CLOWN && strcmp(specie__disp(fish__get_type(fish)), "PoissonClown") == 0,
         "fish__get_id(fish__init_fish(P_CLOWN)) should be P_CLOWN\n");
+
+    /* When using `specie_disp_invert`. */
+    local_ret |= myassert(
+        fish__get_type(fish) == POISSON_CLOWN && specie__disp_invert("PoissonClown") == fish__get_type(fish),
+        "fish__get_id(fish__init_fish(P_CLOWN)) should be P_CLOWN invert\n");
 
     return local_ret;
 }
