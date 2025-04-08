@@ -7,7 +7,7 @@
 #define BUFLEN 512
 #define COMMWORDS 64
 #define TRUE 1
-#define FALSE 1
+#define FALSE 0
 
 enum PROTOSTATES {
     READ_COMMAND,
@@ -62,6 +62,7 @@ enum PROTOSTATES get_command_state(char* command)
  */
 void* worker(void* args)
 {
+    printf("Starting worker thread...\n");
 
     int sockfd = (int)(long)args;
     char buffer[BUFLEN] = {};
@@ -69,7 +70,7 @@ void* worker(void* args)
 
     for (int i = 0; i < COMMWORDS; i++) {
         words[i] = malloc(BUFLEN * sizeof(char));
-        // strcpy(words[i], "empty");
+        strcpy(words[i], "\0");
     }
 
     // FSM - execution of the commands from the "affichage <-> controlleur" protocol
@@ -77,37 +78,42 @@ void* worker(void* args)
     int exited = FALSE;
 
     while (!exited) {
-        if (read(sockfd, buffer, BUFLEN) == -1) { // wait until a command is received
-            fprintf(stderr, "Error when reading the socket\n");
-            exited = TRUE;
-        }
         switch (protostate) {
         case READ_COMMAND:
-            parse_argv2(buffer, words);
-            int w = 0;
-            // printf("in READ_COMMAND: ");
-            // while (strcmp(words[w], "empty") != 0 && w < COMMWORDS) {
-            //     printf("%s ", words[w++]);
-            // }
-            // printf("\n");
-            char* command = words[0];
-            protostate = get_command_state(command);
-            // Error handling
-            if (protostate == ERROR) {
-                fprintf(stderr, "Invalid protocol command");
+            printf("in READ_COMMAND:\n");
+            if (read(sockfd, buffer, BUFLEN) == -1) { // wait until a command is received
+                perror("Error when reading the socket");
                 exited = TRUE;
             }
+            parse_argv2(buffer, words);
+            int w = 0;
+            printf("\t");
+            while (strcmp(words[w], "\0") != 0 && w < COMMWORDS) {
+                printf("%s#", words[w++]);
+            }
+            printf("\n");
+            char* command = words[0];
+            protostate = get_command_state(command);
+            if (protostate == ERROR) {
+                perror("Invalid protocol command");
+                exited = TRUE;
+            }
+            printf("\tnext protostate: %d\n", protostate);
             break;
         case PING:
+            printf("in PING:\n");
             char* pingval = words[1];
             char writebuf[BUFLEN];
             proto__ping(writebuf, sizeof(writebuf), pingval);
+            printf("\twrite %s in socket %d\n", writebuf, sockfd);
             if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-                fprintf(stderr, "Error in writing the response to ping");
+                perror("Error in writing the response to ping\n");
+                exited = TRUE;
             }
+            protostate = READ_COMMAND;
             break;
         default:
-            fprintf(stderr, "Invalid FSM protocol state\n");
+            perror("Invalid FSM protocol state");
             exited = TRUE;
         }
     }
@@ -119,5 +125,6 @@ void* worker(void* args)
 
     close(sockfd);
 
+    printf("Exiting worker thread...\n");
     return NULL;
 }
