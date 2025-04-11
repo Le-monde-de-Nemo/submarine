@@ -12,30 +12,14 @@
 //              - `vec2.h` for the coordinates.
 // ----------------------------------------------------------------------
 
-enum species {
-    POISSON_ROUGE, // 0
-    POISSON_CLOWN, // 1
-    NUM_SPECIES, // without COMMON
-    COMMON = -1
-};
-
-/* Associate a string to a specie.
- * Example:
- *      POISSON_ROUGE --> "PoissonRouge";
- *      POISSON_CLOWN --> "PoissonClown";
- *      COMMON        --> "BasicFish";
+/* Used to convert the fish name into an integer.
+ *          Returning example:
+ *
+ *      `NULL`              --> 0
+ *      `BasicFish`         --> 0
+ *      `toto`              --> unique identifier, not 0.
  */
-char* specie__disp(enum species specie);
-
-/* Could give:
- *
- *  `PoissonRouge`,
- *  `PoissonClown`,
- *  etc..
- *
- *          If it does not exist, the fish will be `BasicFish`, COMMON specie.
- * */
-enum species specie__disp_invert(const char* name_specie);
+int convert_name_to_id(const char* name);
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +28,7 @@ enum species specie__disp_invert(const char* name_specie);
  * If we put the struct in `src/fish/fish.c` we will need to use malloc.
  */
 struct fish_t {
-    enum species specie;
+    const char* name_fish; // The corresponding id is figure__get_id(fig).
     int is_started; // 0 means not, 1 or other things mean yes.
     struct figure_t fig;
 
@@ -59,7 +43,7 @@ struct fish_t {
 // Create a fish.
 //  By default:
 //      id         = 0.
-//      specie     = COMMON.
+//      name_fish  = "BasicFish".
 //      is_started = 0. 0 means not. 1 means yes.
 //      pos        = (0, 0). See `src/figure/figure.h`
 //      size       = (1, 1). See `src/figure/figure.h`
@@ -68,13 +52,15 @@ struct fish_t {
 // ----------------------------------------------------------------------
 
 struct fish_t
-fish__init_fish(enum species specie,
-    int id, struct vec2 pos, struct vec2 size,
+fish__init_fish(const char* name_fish,
+    struct vec2 pos, struct vec2 size,
     const char* mobility_func);
 
 // ----------------------------------------------------------------------
 
 int fish__get_id(const struct fish_t fish);
+
+const char* fish__get_name(const struct fish_t fish);
 
 /* Returning Examples:
  *  "RandomWayPoint";
@@ -91,14 +77,6 @@ const char* fish__get_mobility_func(const struct fish_t fish);
 int fish__is_started(const struct fish_t fish);
 struct fish_t fish__start_fish(struct fish_t fish);
 struct fish_t fish__stop_fish(struct fish_t fish);
-
-// ----------------------------------------------------------------------
-// By default, the type of the fish is COMMON, see `enum SPECIES`.
-// ----------------------------------------------------------------------
-
-enum species fish__get_type(const struct fish_t fish);
-struct fish_t
-fish__set_type(const enum species specie, const struct fish_t fish);
 
 // ----------------------------------------------------------------------
 // To display a fish, it uses snprintf.

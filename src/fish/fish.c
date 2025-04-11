@@ -35,49 +35,40 @@
 
 // ----------------------------------------------------------------------
 
-static char* species_name[] = {
-    "PoissonRouge",
-    "PoissonClown",
-};
-
-char* specie__disp(enum species specie)
+int convert_name_to_id(const char* name)
 {
-    if (specie < 0 || NUM_SPECIES <= specie || specie == COMMON) {
-        return "BasicFish";
+    if (!name || strcmp(name, "BasicFish") == 0) {
+        return 0;
     }
 
-    return species_name[specie];
-}
-
-enum species specie__disp_invert(const char* name_specie)
-{
-    if (!name_specie) {
-        return COMMON;
+    int to_return = 0;
+    int s = strlen(name);
+    for (int i = 0; i < s; ++i) {
+        to_return += i * name[i];
     }
 
-    for (int specie = 0; specie < NUM_SPECIES; ++specie) {
-        // specie could be `POISSON_ROUGE`, `POISSON_CLOWN`, etc..
-        if (strcmp(name_specie, species_name[specie]) == 0) {
-            return specie;
-        }
-    }
-
-    return COMMON;
+    return to_return;
 }
 
 // --------------------------------------------------------------------------
 
 struct fish_t
-fish__init_fish(enum species specie,
-    int id, struct vec2 pos, struct vec2 size,
+fish__init_fish(const char* name_fish,
+    struct vec2 pos, struct vec2 size,
     const char* mobility_func)
 {
+    int id = convert_name_to_id(name_fish);
     struct fish_t fish = {
-        .specie = specie,
+        .name_fish = name_fish,
         .is_started = 0, // Not started by default.
         .fig = figure__init_figure(id, pos, size),
         .mobility_function_name = mobility_func
     };
+
+    // For the disp functions, not to get an error.
+    if (!name_fish) {
+        fish.name_fish = "BasicFish";
+    }
 
     get_mobility_function_duration(mobility_func,
         fish.mobility_function_duration);
@@ -92,6 +83,11 @@ fish__init_fish(enum species specie,
 int fish__get_id(const struct fish_t fish)
 {
     return figure__get_id(fish.fig);
+}
+
+const char* fish__get_name(const struct fish_t fish)
+{
+    return fish.name_fish;
 }
 
 const char* fish__get_mobility_func(const struct fish_t fish)
@@ -109,7 +105,7 @@ int fish__is_started(const struct fish_t fish)
 struct fish_t fish__start_fish(struct fish_t fish)
 {
     struct fish_t new_fish = {
-        .specie = fish.specie,
+        .name_fish = fish.name_fish,
         .is_started = 1,
         .fig = fish.fig,
         .mobility_function_duration = fish.mobility_function_duration,
@@ -123,7 +119,7 @@ struct fish_t fish__start_fish(struct fish_t fish)
 struct fish_t fish__stop_fish(struct fish_t fish)
 {
     struct fish_t new_fish = {
-        .specie = fish.specie,
+        .name_fish = fish.name_fish,
         .is_started = 0,
         .fig = fish.fig,
         .mobility_function_duration = fish.mobility_function_duration,
@@ -136,55 +132,34 @@ struct fish_t fish__stop_fish(struct fish_t fish)
 
 // --------------------------------------------------------------------------
 
-enum species fish__get_type(const struct fish_t fish)
-{
-    return fish.specie;
-}
-
-struct fish_t
-fish__set_type(const enum species specie, struct fish_t fish)
-{
-    if (specie < 0 || NUM_SPECIES <= specie) {
-        fish.specie = COMMON;
-    } else {
-        fish.specie = specie;
-    }
-
-    return fish;
-}
-
-// --------------------------------------------------------------------------
-
 char* fish__disp(const struct fish_t fish, char* dst, long n)
 {
-    int id_fish = figure__get_id(fish.fig);
-    enum species specie_fish = fish.specie;
     struct vec2 coord = figure__get_current_pos(fish.fig);
-    struct vec2 size = figure__get_width_height(fish.fig);
+    struct vec2 next_coord = fish.mobility_function_target_pos();
+    int duration = fish.mobility_function_duration();
 
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]\n",
-        species_name[specie_fish],
+        fish.name_fish,
         coord.x, coord.y,
-        size.x, size.y,
-        id_fish);
+        next_coord.x, next_coord.y,
+        duration);
 
     return dst;
 }
 
 char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
 {
-    int id_fish = figure__get_id(fish.fig);
-    enum species specie_fish = fish.specie;
     struct vec2 coord = figure__get_current_pos(fish.fig);
-    struct vec2 size = figure__get_width_height(fish.fig);
+    struct vec2 next_coord = fish.mobility_function_target_pos();
+    int duration = fish.mobility_function_duration();
 
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]",
-        species_name[specie_fish],
+        fish.name_fish,
         coord.x, coord.y,
-        size.x, size.y,
-        id_fish);
+        next_coord.x, next_coord.y,
+        duration);
 
     return dst;
 }
@@ -200,7 +175,7 @@ struct fish_t
 fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
 {
     struct fish_t new_fish = {
-        .specie = fish.specie,
+        .name_fish = fish.name_fish,
         .is_started = fish.is_started,
         .fig = figure__set_current_pos(pos, fish.fig),
         .mobility_function_duration = fish.mobility_function_duration,

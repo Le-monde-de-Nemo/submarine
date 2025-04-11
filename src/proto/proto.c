@@ -25,7 +25,7 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes)
     for (int i = 0; i < n_fishes; ++i) {
         struct fish_t fish = fishes[i];
         int len = snprintf(fish_buffer, n, "[%s at %dx%d,%dx%d,%d] ",
-            specie__disp(fish.specie),
+            fish__get_name(fish),
             fish__get_current_pos(fish).x,
             fish__get_current_pos(fish).y,
             fish__get_target_pos(fish).x,
