@@ -30,5 +30,6 @@ enum _repl_cmd repl_add_view_exec(int argc, char* argv[])
     struct vue_t new_vue = vue__init_vue(id, pos, size);
     global_aqua = aqua__add_vue(new_vue, global_aqua);
 
+    printf("\t-> view added\n");
     return ok;
 }
