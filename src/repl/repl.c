@@ -108,7 +108,7 @@ int repl__run(struct repl repl)
         reset_argv(argc, argv);
 
         // Get raw input
-        printf("> ");
+        printf("\n$ ");
         char* res = fgets(input, REPL_BUF_SIZE, stdin);
         if (res == NULL || interrupted) {
             fprintf(stderr, "Found EOF while reading input, exiting...\n");

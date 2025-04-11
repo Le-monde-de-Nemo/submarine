@@ -22,5 +22,6 @@ enum _repl_cmd repl_del_view_exec(int argc, char* argv[])
 
     global_aqua = aqua__del_vue(id, global_aqua);
 
+    printf("\t-> view N%d deleted\n", id);
     return ok;
 }

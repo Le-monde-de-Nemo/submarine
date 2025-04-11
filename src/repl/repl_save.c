@@ -23,6 +23,7 @@ enum _repl_cmd repl_save_exec(int argc, char* argv[])
     }
 
     aqua__save_file(argv[1], global_aqua);
-    printf("Saved to file %s\n", argv[1]);
+
+    printf("\t-> Aquarium saved (%d display view)!\n", aqua__get_nb_vues(global_aqua));
     return ok;
 }

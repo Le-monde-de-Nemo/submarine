@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
     printf("\n---------------\n");
     char buf[4096] = {};
     printf("%s", controller__disp(buf, sizeof(buf), controller));
-    printf("---------------\n\n");
+    printf("---------------\n");
 
     pthread_t master_thread;
     pthread_create(&master_thread, NULL, master, NULL);
