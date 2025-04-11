@@ -35,10 +35,7 @@ enum _repl_cmd repl_load_exec(int argc, char* argv[])
 
     global_aqua = aqua__from_file(argv[1]);
 
-    printf("Loaded:\n");
+    printf("\t-> aquarium loaded (%d display view)!\n", aqua__get_nb_vues(global_aqua));
 
-    char buf[REPL_LOAD_BUFLEN] = {};
-    aqua__disp(global_aqua, buf, REPL_LOAD_BUFLEN);
-    printf("%s\n", buf);
     return ok;
 }

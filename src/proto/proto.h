@@ -9,7 +9,7 @@
 // All of these functions returns dst
 #include "fish.h"
 
-char* proto__greeting(char* dst, long n, char* id, int nogreeting);
+char* proto__greeting(char* dst, long n, int id, int nogreeting);
 
 char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes);
 

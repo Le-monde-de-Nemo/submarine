@@ -1,14 +1,24 @@
 #include "proto.h"
+#include "aqua.h"
 #include "fish.h"
+#include "vue.h"
 #include <stdio.h>
 #include <string.h>
 
-char* proto__greeting(char* dst, long n, char* id, int nogreeting)
+extern struct aqua_t global_aqua;
+
+char* proto__greeting(char* dst, long n, int id, int nogreeting)
 {
     if (nogreeting)
         snprintf(dst, n, "no greeting\n");
-    else
-        snprintf(dst, n, "greeting %s\n", id);
+
+    else {
+        struct vue_t* vue = aqua__get_vue(id, global_aqua);
+        char vuebuf[2048] = {};
+        vue__disp(*vue, vuebuf, sizeof(vuebuf));
+        snprintf(dst, n, "greeting N%d %s\n", id, vuebuf);
+    }
+
     return dst;
 }
 
