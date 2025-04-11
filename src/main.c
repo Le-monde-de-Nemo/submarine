@@ -35,7 +35,7 @@
 
 #define LHOST_WORKER "127.0.0.1"
 
-struct aqua_t global_aqua;
+extern struct aqua_t global_aqua;
 
 static struct pollfd fds[WORKERC];
 // Use poll because they say it's better
