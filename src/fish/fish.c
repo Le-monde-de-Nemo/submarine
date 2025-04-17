@@ -145,8 +145,8 @@ char* fish__disp(const struct fish_t fish, char* dst, long n)
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]\n",
         fish.name_fish,
-        coord.x, coord.y,
         next_coord.x, next_coord.y,
+        coord.x, coord.y,
         duration);
 
     return dst;
@@ -161,8 +161,8 @@ char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]",
         fish.name_fish,
-        coord.x, coord.y,
         next_coord.x, next_coord.y,
+        coord.x, coord.y,
         duration);
 
     return dst;
