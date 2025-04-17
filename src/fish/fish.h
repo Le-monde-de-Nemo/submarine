@@ -21,7 +21,7 @@
  *
  *      `NULL`              --> `BASIC_FISH_ID`.
  *      `BasicFish`         --> `BASIC_FISH_ID`.
- *      `toto`              --> unique identifier, not 0.
+ *      `toto`              --> unique identifier, not BASIC_FISH_ID.
  *
  *              Usually, the returned value is a positive integer.
  */
