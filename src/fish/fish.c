@@ -38,13 +38,13 @@
 int convert_name_to_id(const char* name)
 {
     if (!name || strcmp(name, "BasicFish") == 0) {
-        return 0;
+        return BASIC_FISH_ID;
     }
 
     int to_return = 0;
     int s = strlen(name);
     for (int i = 0; i < s; ++i) {
-        to_return += i * name[i];
+        to_return += (i + 1) * name[i];
     }
 
     return to_return;

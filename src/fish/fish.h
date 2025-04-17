@@ -12,12 +12,18 @@
 //              - `vec2.h` for the coordinates.
 // ----------------------------------------------------------------------
 
+#ifndef BASIC_FISH_ID
+#define BASIC_FISH_ID -666
+#endif // BASIC_FISH_ID
+
 /* Used to convert the fish name into an integer.
  *          Returning example:
  *
- *      `NULL`              --> 0
- *      `BasicFish`         --> 0
+ *      `NULL`              --> `BASIC_FISH_ID`.
+ *      `BasicFish`         --> `BASIC_FISH_ID`.
  *      `toto`              --> unique identifier, not 0.
+ *
+ *              Usually, the returned value is a positive integer.
  */
 int convert_name_to_id(const char* name);
 
