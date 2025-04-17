@@ -50,6 +50,15 @@ int convert_name_to_id(const char* name)
     return to_return;
 }
 
+const char* get_name(const char* name)
+{
+    if (!name) {
+        return "BasicFish";
+    }
+
+    return name;
+}
+
 // --------------------------------------------------------------------------
 
 struct fish_t
@@ -59,21 +68,16 @@ fish__init_fish(const char* name_fish,
 {
     int id = convert_name_to_id(name_fish);
     struct fish_t fish = {
-        .name_fish = name_fish,
+        .name_fish = get_name(name_fish),
         .is_started = 0, // Not started by default.
         .fig = figure__init_figure(id, pos, size),
         .mobility_function_name = mobility_func
     };
 
-    // For the disp functions, not to get an error.
-    if (!name_fish) {
-        fish.name_fish = "BasicFish";
-    }
-
     get_mobility_function_duration(mobility_func,
-        fish.mobility_function_duration);
+        &(fish.mobility_function_duration));
     get_mobility_function_target_pos(mobility_func,
-        fish.mobility_function_target_pos);
+        &(fish.mobility_function_target_pos));
 
     return fish;
 }

@@ -32,33 +32,33 @@ static struct vec2 (*array_mobility_function_target_pos[NUM_MOBILITY_FUNCTIONS])
 
 // --------------------------------------------------------------------------
 
-void get_mobility_function_duration(const char* name, int (*ptr_func)())
+void get_mobility_function_duration(const char* name, int (**ptr_func)())
 {
     // ind could be for instance RANDOM_WAY_POINT or DIRECT_WAY_POINT.
     for (int ind = 0; ind < NUM_MOBILITY_FUNCTIONS; ++ind) {
         if (strcmp(name, array_mobility_function_names[ind]) == 0) {
-            ptr_func = array_mobility_function_duration[ind];
+            *ptr_func = array_mobility_function_duration[ind];
             return;
         }
     }
 
     // If the name does not exist, take "RandomWayPoint".
-    ptr_func = array_mobility_function_duration[RANDOM_WAY_POINT];
+    *ptr_func = array_mobility_function_duration[RANDOM_WAY_POINT];
 }
 
 void get_mobility_function_target_pos(const char* name,
-    struct vec2 (*ptr_func)())
+    struct vec2 (**ptr_func)())
 {
     // ind could be for instance RANDOM_WAY_POINT or DIRECT_WAY_POINT.
     for (int ind = 0; ind < NUM_MOBILITY_FUNCTIONS; ++ind) {
         if (strcmp(name, array_mobility_function_names[ind]) == 0) {
-            ptr_func = array_mobility_function_target_pos[ind];
+            *ptr_func = array_mobility_function_target_pos[ind];
             return;
         }
     }
 
     // If the name does not exist, take "RandomWayPoint".
-    ptr_func = array_mobility_function_target_pos[RANDOM_WAY_POINT];
+    *ptr_func = array_mobility_function_target_pos[RANDOM_WAY_POINT];
 }
 
 // --------------------------------------------------------------------------
