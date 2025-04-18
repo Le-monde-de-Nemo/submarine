@@ -2,6 +2,7 @@
 #define __FISH__H__
 
 #include "figure.h"
+#include "mobility.h"
 #include "vec2.h"
 
 // ----------------------------------------------------------------------
@@ -10,11 +11,16 @@
 //      Dependencies:
 //              - `figure.h` for the id, coordinates, and size.
 //              - `vec2.h` for the coordinates.
+//              - `mobility.h` for the mobility information of the fish.
 // ----------------------------------------------------------------------
 
 #ifndef BASIC_FISH_ID
 #define BASIC_FISH_ID -666
 #endif // BASIC_FISH_ID
+
+#ifndef MAX_SIZE_NAME_FISH
+#define MAX_SIZE_NAME_FISH 64
+#endif // MAX_SIZE_NAME_FISH
 
 /* Used to convert the fish name into an integer.
  *          Returning example:
@@ -34,15 +40,13 @@ int convert_name_to_id(const char* name);
  * If we put the struct in `src/fish/fish.c` we will need to use malloc.
  */
 struct fish_t {
-    const char* name_fish; // The corresponding id is figure__get_id(fig).
+    char* name_fish; // The corresponding id is figure__get_id(fig).
     int is_started; // 0 means not, 1 or other things mean yes.
     struct figure_t fig;
 
-    // To know where and when the fish will go, given a former position.
-    // See `src/fish/fish.c`.
-    int (*mobility_function_duration)();
-    struct vec2 (*mobility_function_target_pos)();
-    const char* mobility_function_name;
+    // To store the mobility information of a fish.
+    // See `src/mobility/mobility.h`.
+    struct mobility_t mob;
 };
 
 // ----------------------------------------------------------------------
@@ -66,7 +70,9 @@ fish__init_fish(const char* name_fish,
 
 int fish__get_id(const struct fish_t fish);
 
-const char* fish__get_name(const struct fish_t fish);
+char* fish__get_name(const struct fish_t fish);
+
+// ----------------------------------------------------------------------
 
 /* Returning Examples:
  *  "RandomWayPoint";
@@ -77,6 +83,8 @@ const char* fish__get_name(const struct fish_t fish);
  *  Returns NULL if the fish does not exist or if the mob func is not init.
  */
 const char* fish__get_mobility_func(const struct fish_t fish);
+
+// ----------------------------------------------------------------------
 
 struct vec2 fish__get_width_height(const struct fish_t fish);
 
@@ -89,7 +97,7 @@ struct fish_t fish__stop_fish(struct fish_t fish);
 // ----------------------------------------------------------------------
 // To display a fish, it uses snprintf.
 //              Format:
-//                  `"[PoissonRouge at fish_xxfish_y,size_xxsize_y,id]"`
+//                  `"[PoissonRouge at fish_xxfish_y,last_xxlast_y,time]"`
 //
 //      It writes at most n chars to dst to display *fish*.
 //
@@ -114,6 +122,16 @@ char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n);
 struct vec2 fish__get_current_pos(const struct fish_t fish);
 struct fish_t
 fish__set_current_pos(const struct vec2 pos, struct fish_t fish);
+
+// ----------------------------------------------------------------------
+// To update the fish mobility. It will be called by the `aquarium`.
+//          This will call the `mobility` functions
+//                                  in `src/mobility/mobility.h`.
+//
+//              If the fish is not started, it does nothing.
+// ----------------------------------------------------------------------
+
+struct fish_t fish__update_mobility(const struct fish_t);
 
 // ----------------------------------------------------------------------
 // To access to the next pos of the fish, given his mobility functions.

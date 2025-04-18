@@ -97,12 +97,19 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua);
 struct aqua_t
 aqua__del_fish(const char* name_fish, const struct aqua_t aqua);
 
-/* It returns the ptr of the fish, or NULL if not found. */
+/* It returns the ptr of the fish, or NULL if not found.
+ *
+ *  When called, it will update the fish if it is started using
+ *      `fish__update_mobility` from `src/fish/fish.c`.
+ */
 struct fish_t*
 aqua__get_fish(const char* name_fish, const struct aqua_t aqua);
 
 /* It returns NULL if there are no fishes.
  *      The length of the array is `aqua__get_nb_fishes()`.
+ *
+ *  When called, it will update the fish if it is started using
+ *      `fish__update_mobility` from `src/fish/fish.c`.
  *
  *                      You will have to free the array once used.
  */
