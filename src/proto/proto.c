@@ -18,7 +18,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
         char vuebuf[2048] = {};
         vue__disp(*vue, vuebuf, sizeof(vuebuf));
         fprintf(stderr, "%s\n", vuebuf);
-        snprintf(dst, n, "greeting N%d %s\n", id, vuebuf);
+        snprintf(dst, n, "greeting %s\n", vuebuf);
     }
 
     return dst;
