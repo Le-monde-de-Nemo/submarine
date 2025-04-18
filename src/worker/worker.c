@@ -339,6 +339,8 @@ void* worker(void* args)
             break;
 
         case LOGOUT:
+            bzero(writebuf, sizeof(writebuf));
+
             printf("in LOGOUT:\n"); // LOG
             if (strncmp(words[1], "out", BUFLEN) != 0) {
                 fprintf(stderr, "Invalid log out command\n"); // LOG
