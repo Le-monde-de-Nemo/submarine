@@ -25,6 +25,9 @@ int myassert(int cond, char* suffix)
     return cond != 0;
 }
 
+static int nb_fishes = 100;
+static char** array_name_fishes;
+
 int test__aqua_init_aqua(void)
 {
     struct aqua_t aqua = aqua__init_aqua(vec2__ones());
@@ -72,13 +75,15 @@ int test__aqua_add_fish(void)
 
     long n = 4096;
     char dst[n];
-    printf("%s\n", aqua__disp(aqua, dst, n));
-    printf("%s\n", aqua__disp_fishes(aqua, dst, n));
+    printf("%s", aqua__disp(aqua, dst, n));
+    dst[0] = '\0';
 
-    for (i = 0; i < 100; ++i) {
+    printf("%s", aqua__disp_fishes(aqua, dst, n));
+    dst[0] = '\0';
+
+    for (i = 0; i < nb_fishes; ++i) {
         struct fish_t fish = fish__init_fish(
-            i % NUM_SPECIES,
-            i + 1,
+            array_name_fishes[i],
             vec2__zeros(),
             vec2__ones(),
             "RandomWayPoint");
@@ -89,17 +94,18 @@ int test__aqua_add_fish(void)
             "aqua__get_nb_fishes(init_aqua + i fish) should be i\n");
     }
     printf("%s\n", aqua__disp_fishes(aqua, dst, n));
+    dst[0] = '\0';
 
-    for (i = 0; i < 100; ++i) {
-        aqua = aqua__del_fish(i + 1, aqua);
+    for (i = 0; i < nb_fishes; ++i) {
+        aqua = aqua__del_fish(array_name_fishes[i], aqua);
 
         local_ret |= myassert(
             aqua__get_nb_fishes(aqua) == 100 - i - 1,
             "aqua__get_nb_fishes(init_aqua - i fish) should be i\n");
     }
 
-    for (i = 0; i < 100; ++i) {
-        struct fish_t* fish = aqua__get_fish(i, aqua);
+    for (i = 0; i < nb_fishes; ++i) {
+        struct fish_t* fish = aqua__get_fish(array_name_fishes[i], aqua);
         local_ret |= myassert(
             fish == NULL,
             "aqua__get_fish(i fish, NULL) should be NULL after deletion\n");
@@ -109,10 +115,9 @@ int test__aqua_add_fish(void)
         aqua__get_fishes(aqua) == NULL,
         "aqua__get_fishes(init_aqua) should be NULL\n");
 
-    for (i = 0; i < 100; ++i) {
+    for (i = 0; i < nb_fishes; ++i) {
         struct fish_t fish = fish__init_fish(
-            i % NUM_SPECIES,
-            i + 1,
+            array_name_fishes[i],
             vec2__zeros(),
             vec2__ones(),
             "RandomWayPoint");
@@ -120,8 +125,9 @@ int test__aqua_add_fish(void)
         aqua = aqua__add_fish(fish, aqua);
     }
     printf("%s\n", aqua__disp_fishes_without_eol(aqua, dst, n));
+    dst[0] = '\0';
 
-    struct fish_t* fish = aqua__get_fish(50, aqua);
+    struct fish_t* fish = aqua__get_fish(array_name_fishes[50], aqua);
 
     local_ret |= myassert(
         fish != NULL,
@@ -140,8 +146,7 @@ int test__aqua_add_fish(void)
     aqua = aqua__init_aqua(vec2__ones());
     for (i = 0; i < 100; ++i) {
         struct fish_t fish = fish__init_fish(
-            i % NUM_SPECIES,
-            i + 1,
+            array_name_fishes[i],
             vec2__zeros(),
             vec2__ones(),
             "RandomWayPoint");
@@ -152,9 +157,10 @@ int test__aqua_add_fish(void)
     struct fish_t* array_fishes = aqua__get_fishes(aqua);
     for (i = 0; i < 100; ++i) {
         int id = fish__get_id(array_fishes[i]);
+
         local_ret |= myassert(
-            id <= 100 && 0 < id,
-            "aqua__get_id(aqua__get_fishes(100 fishes))(i) should be i<=100, 0<i\n");
+            0 <= id && id != BASIC_FISH_ID,
+            "aqua__get_id(aqua__get_fishes(100 fishes))(i) should be  0<i\n");
     }
     free(array_fishes);
 
@@ -174,6 +180,7 @@ int test__aqua_add_vue(void)
     long n = 4096;
     char dst[n];
     printf("%s\n", aqua__disp(aqua, dst, n));
+    dst[0] = '\0';
 
     for (i = 0; i < 100; ++i) {
         struct vue_t vue = vue__init_vue(i + 1, vec2__zeros(), vec2__ones());
@@ -184,6 +191,7 @@ int test__aqua_add_vue(void)
             "aqua__get_nb_vues(init_aqua + i vue) should be i\n");
     }
     printf("%s\n", aqua__disp(aqua, dst, n));
+    dst[0] = '\0';
 
     for (i = 0; i < 100; ++i) {
         aqua = aqua__del_vue(i + 1, aqua);
@@ -254,9 +262,21 @@ int main(int argc, char* argv[])
     srand(time(NULL));
     int ret = 0;
 
+    array_name_fishes = malloc(nb_fishes * sizeof(char*));
+
+    for (int i = 0; i < nb_fishes; ++i) {
+        array_name_fishes[i] = malloc(2048 * sizeof(char));
+        strcpy(array_name_fishes[i], (char*)(&i));
+    }
+
     ret |= test__aqua_init_aqua();
     ret |= test__aqua_add_fish();
     ret |= test__aqua_add_vue();
+
+    for (int i = 0; i < nb_fishes; ++i) {
+        free(array_name_fishes[i]);
+    }
+    free(array_name_fishes);
 
     return ret;
 }

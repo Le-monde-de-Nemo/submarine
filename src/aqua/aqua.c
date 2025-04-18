@@ -212,11 +212,12 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 }
 
 struct aqua_t
-aqua__del_fish(int id_fish, const struct aqua_t aqua)
+aqua__del_fish(const char* name_fish, const struct aqua_t aqua)
 {
     if (aqua.nb_fishes <= 0) {
         return aqua;
     }
+    int id_fish = convert_name_to_id(name_fish);
 
     // `aqua__find_list_elt_fish` returns NULL if id_fish is not found.
     struct aqua__entry_fish_t* n1 = aqua__find_list_elt_fish(id_fish, aqua);
@@ -241,11 +242,12 @@ aqua__del_fish(int id_fish, const struct aqua_t aqua)
 }
 
 struct fish_t*
-aqua__get_fish(int id_fish, const struct aqua_t aqua)
+aqua__get_fish(const char* name_fish, const struct aqua_t aqua)
 {
     if (aqua.nb_fishes <= 0) {
         return NULL;
     }
+    int id_fish = convert_name_to_id(name_fish);
 
     // `aqua__find_list_elt_fish` returns NULL if id_fish is not found.
     struct aqua__entry_fish_t* n1 = aqua__find_list_elt_fish(id_fish, aqua);
