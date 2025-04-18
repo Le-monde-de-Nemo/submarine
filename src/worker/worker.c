@@ -17,6 +17,7 @@
 extern struct aqua_t global_aqua;
 
 enum PROTOSTATES {
+    CLEAN_VARS,
     READ_BUFF,
     PARSE_BUFF,
     PARSE_CMD,
@@ -57,7 +58,7 @@ int worker__find_cmd_in_buffer(char* buffer, int buff_offset)
 }
 
 /**
- * Separates words separated by spaces
+ * Separates words separated by spaces. The input string must end with \n
  */
 void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
 {
@@ -87,9 +88,9 @@ enum PROTOSTATES worker__get_command_state(char* command)
 {
     enum PROTOSTATES retval;
 
-    if (strncmp(command, "ping", 4) == 0) {
+    if (strncmp(command, "ping", BUFLEN) == 0) {
         retval = PING;
-    } else if (strncmp(command, "log", 3) == 0) {
+    } else if (strncmp(command, "log", BUFLEN) == 0) {
         retval = LOGOUT;
     } else if (strncmp(command, "hello", BUFLEN) == 0) {
         retval = HELLO;
@@ -134,6 +135,12 @@ void* worker(void* args)
     while (!exited) {
 
         switch (protostate) {
+
+        case CLEAN_VARS:
+            memset(cmd, 0, sizeof(cmd));
+            memset(words, 0, sizeof(words));
+            protostate = READ_BUFF;
+            break;
 
         case READ_BUFF:
             printf("in READ_BUFF:\n"); // LOG
@@ -324,22 +331,24 @@ void* worker(void* args)
                 perror("Error in writing the response to ping\n"); // LOG
                 protostate = ERROR;
             }
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case LOGOUT:
             printf("in LOGOUT:\n"); // LOG
-            if (strncmp(words[1], "out", 3) != 0) {
+            if (strncmp(words[1], "out", BUFLEN) != 0) {
                 fprintf(stderr, "Invalid log out command\n"); // LOG
+                protostate = ERROR;
             } else {
                 char writebuf[BUFLEN];
                 proto__log(writebuf, sizeof(writebuf));
                 printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
                 if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
                     perror("Error in writing the response to log out\n"); // LOG
+                    protostate = ERROR;
                 }
+                exited = TRUE;
             }
-            exited = TRUE;
             break;
 
         case ERROR:
