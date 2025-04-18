@@ -40,8 +40,8 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
             fish__get_name(fish),
             fish__get_current_pos(fish).x - origin.x,
             fish__get_current_pos(fish).y - origin.x,
-            fish__get_target_pos(fish).x - origin.x,
-            fish__get_target_pos(fish).y - origin.y,
+            fish__get_width_height(fish).x,
+            fish__get_width_height(fish).y,
             fish__get_move_duration(fish));
 
         if (n_acc + len < n - 1) {
