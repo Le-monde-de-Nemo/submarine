@@ -1,18 +1,30 @@
+#include "aqua.h"
+#include "fish.h"
 #include "proto.h"
+#include "vec2.h"
+#include "vue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 
-#define BUFLEN 1024
+#define BUFLEN 4096
 #define COMMWORDS 64
 #define TRUE 1
 #define FALSE 0
+
+extern struct aqua_t global_aqua;
 
 enum PROTOSTATES {
     READ_BUFF,
     PARSE_CMD,
     PING,
+    HELLO, /* hello */
+    GET_FISHES, /* getFishes */
+    ADD_FISH, /* getFishes */
+    DEL_FISH, /* getFishes */
+    START_FISH, /* getFishes */
     LOGOUT,
     ERROR
 };
@@ -63,7 +75,17 @@ enum PROTOSTATES worker__get_command_state(char* command)
         retval = PING;
     } else if (strncmp(command, "log", 3) == 0) {
         retval = LOGOUT;
-    } else { // add other commands
+    } else if (strncmp(command, "hello", BUFLEN) == 0) {
+        retval = HELLO;
+    } else if (strncmp(command, "getFishes", BUFLEN) == 0) {
+        retval = GET_FISHES;
+    } else if (strncmp(command, "addFish", BUFLEN) == 0) {
+        retval = ADD_FISH;
+    } else if (strncmp(command, "delFish", BUFLEN) == 0) {
+        retval = DEL_FISH;
+    } else if (strncmp(command, "startFish", BUFLEN) == 0) {
+        retval = START_FISH;
+    } else {
         retval = ERROR;
     }
 
@@ -84,6 +106,8 @@ void* worker(void* args)
     int buff_offset = 0; // offset for unfinished commands
     char cmd[BUFLEN] = {}; // command read from buffer
     char words[COMMWORDS][BUFLEN] = {}; // words of the command
+    char writebuf[BUFLEN];
+    struct vue_t* current_vue = NULL;
 
     // FSM - execution of the commands from the "affichage <-> controlleur" protocol
     int protostate = READ_BUFF;
@@ -95,14 +119,17 @@ void* worker(void* args)
         case READ_BUFF:
             printf("in READ_BUFF:\n"); // LOG
             int bytes_read = read(sockfd, buffer + buff_offset, BUFLEN - buff_offset);
+
             // wait until a command is received
             if (bytes_read == -1) {
                 perror("Error when reading the socket\n"); // LOG
                 protostate = ERROR;
             }
+
             int endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
             if (endcmd_offset == -1) {
                 buff_offset += bytes_read;
+
                 if (buff_offset >= BUFLEN) {
                     printf("Worker buffer overflow\n"); // LOG
                     protostate = ERROR;
@@ -112,14 +139,17 @@ void* worker(void* args)
                     // if the command is incomplete, the worker remains reading the
                     // bytes sent to the socket
                 }
+
             } else {
                 memset(cmd, 0, BUFLEN);
                 strncpy(cmd, buffer, endcmd_offset + 1); // stores the command (max of BUFLEN bytes)
                 char new_buffer[BUFLEN] = {};
+
                 if (endcmd_offset < BUFLEN - 1) {
                     // the \n is not the end character of the buffer
                     strncpy(new_buffer, buffer + endcmd_offset + 1, BUFLEN - (endcmd_offset + 1));
                 }
+
                 strncpy(buffer, new_buffer, BUFLEN);
                 protostate = PARSE_CMD;
             }
@@ -132,10 +162,125 @@ void* worker(void* args)
             protostate = worker__get_command_state(words[0]);
             break;
 
+        case HELLO:
+            bzero(writebuf, sizeof(writebuf));
+            int id = -1;
+            int nogreeting = 0;
+            sscanf(words[3], "N%d", &id);
+
+            current_vue = aqua__get_vue(id, global_aqua);
+            proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
+
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response to ping\n"); // LOG
+                exited = TRUE;
+            }
+
+            protostate = READ_BUFF;
+            break;
+
+        case ADD_FISH:
+            bzero(writebuf, sizeof(writebuf));
+
+            if (current_vue == NULL) {
+                fprintf(stderr, "%p\n", current_vue);
+                protostate = READ_BUFF;
+                break;
+            }
+
+            // PoissonRouge at 90x40,10x4, RandomWayPoint
+            int x_pos = -1, y_pos = -1;
+            int x_target = -1, y_target = -1;
+            struct vec2 pos = vec2__create(x_pos, y_pos);
+            struct vec2 target = vec2__create(x_target, y_target);
+
+            // struct fish_t fish2add = fish__init_fish(words[1], pos, size, const char *mobility_func)
+
+            // proto__add_fish(writebuf, BUFLEN, fishes, nb_fishes);
+
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response to ping\n"); // LOG
+                exited = TRUE;
+            }
+
+            protostate = READ_BUFF;
+            break;
+
+        case DEL_FISH:
+            bzero(writebuf, sizeof(writebuf));
+
+            if (current_vue == NULL) {
+                fprintf(stderr, "%p\n", current_vue);
+                protostate = READ_BUFF;
+                break;
+            }
+
+            struct fish_t* fish2add = aqua__get_fish(words[1], global_aqua);
+            int already_exists = (fish2add != NULL);
+            if (already_exists)
+                aqua__del_fish(words[1], global_aqua);
+
+            proto__del_fish(writebuf, BUFLEN, already_exists);
+
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response to ping\n"); // LOG
+                exited = TRUE;
+            }
+
+            protostate = READ_BUFF;
+            break;
+
+        case START_FISH:
+            bzero(writebuf, sizeof(writebuf));
+
+            if (current_vue == NULL) {
+                fprintf(stderr, "%p\n", current_vue);
+                protostate = READ_BUFF;
+                break;
+            }
+
+            struct fish_t* fish2start = aqua__get_fish(words[1], global_aqua);
+            already_exists = (fish2start != NULL);
+            if (already_exists)
+                *fish2start = fish__start_fish(*fish2start);
+
+            proto__start_fish(writebuf, BUFLEN, already_exists);
+
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response to ping\n"); // LOG
+                exited = TRUE;
+            }
+
+            protostate = READ_BUFF;
+            break;
+
+        case GET_FISHES:
+            bzero(writebuf, sizeof(writebuf));
+
+            if (current_vue == NULL) {
+                fprintf(stderr, "%p\n", current_vue);
+                protostate = READ_BUFF;
+                break;
+            }
+
+            struct fish_t* fishes = aqua__get_fishes(global_aqua);
+            int nb_fishes = aqua__get_nb_fishes(global_aqua);
+
+            struct vec2 origin = vue__get_current_pos(*current_vue);
+
+            proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
+
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response to ping\n"); // LOG
+                exited = TRUE;
+            }
+
+            protostate = READ_BUFF;
+            break;
+
         case PING:
             printf("in PING:\n"); // LOG
             char* pingval = words[1];
-            char writebuf[BUFLEN];
             proto__ping(writebuf, sizeof(writebuf), pingval);
             printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
             if (write(sockfd, writebuf, strlen(writebuf)) == -1) {

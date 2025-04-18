@@ -17,6 +17,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
         struct vue_t* vue = aqua__get_vue(id, global_aqua);
         char vuebuf[2048] = {};
         vue__disp(*vue, vuebuf, sizeof(vuebuf));
+        fprintf(stderr, "%s\n", vuebuf);
         snprintf(dst, n, "greeting N%d %s\n", id, vuebuf);
     }
 
@@ -25,7 +26,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
 
 char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vec2 origin)
 {
-    char acc[n];
+    char acc[n] = {};
     char fish_buffer[n];
     for (int i = 0; i < n; ++i)
         acc[i] = '\0';
