@@ -11,11 +11,23 @@
 
 enum PROTOSTATES {
     READ_BUFF,
+    PARSE_BUFF,
     PARSE_CMD,
     PING,
     LOGOUT,
     ERROR
 };
+
+int worker__count_cmds(char* buffer, int buff_offset)
+{
+    int ncmds = 0;
+    for (int i = buff_offset; i < BUFLEN; i++) {
+        if (buffer[i] == '\n') {
+            ncmds++;
+        }
+    }
+    return ncmds;
+}
 
 /**
  * Verifies if the buffer contains a full cmd (i.e. contains a \n).
@@ -43,6 +55,7 @@ void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
     for (int i = 0; i < inp_size; i++) {
         switch (input[i]) {
         case ' ':
+            words[widx][woff] = '\0';
             widx++;
             woff = 0;
             break;
@@ -55,6 +68,9 @@ void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
     }
 }
 
+/**
+ * Returns the FSM state that corresponds to the given command
+ */
 enum PROTOSTATES worker__get_command_state(char* command)
 {
     enum PROTOSTATES retval;
@@ -84,6 +100,8 @@ void* worker(void* args)
     int buff_offset = 0; // offset for unfinished commands
     char cmd[BUFLEN] = {}; // command read from buffer
     char words[COMMWORDS][BUFLEN] = {}; // words of the command
+    int ncmds = 0; // number of commands stored in the buffer
+    int nbytes_socket = 0; // number of bytes read on the last call of read(sockfd)
 
     // FSM - execution of the commands from the "affichage <-> controlleur" protocol
     int protostate = READ_BUFF;
@@ -92,38 +110,48 @@ void* worker(void* args)
     while (!exited) {
 
         switch (protostate) {
+
         case READ_BUFF:
             printf("in READ_BUFF:\n"); // LOG
-            int bytes_read = read(sockfd, buffer + buff_offset, BUFLEN - buff_offset);
-            // wait until a command is received
-            if (bytes_read == -1) {
-                perror("Error when reading the socket\n"); // LOG
-                protostate = ERROR;
+            // Reads from socket only if there are no commands on the buffer
+            if (ncmds == 0) {
+                nbytes_socket = read(sockfd, buffer + buff_offset, BUFLEN - buff_offset);
+                ncmds = worker__count_cmds(buffer, buff_offset);
+                if (nbytes_socket == -1) {
+                    perror("Error when reading the socket\n"); // LOG
+                    protostate = ERROR;
+                }
+            } else {
+                // There are still other commands to read on the buffer
+                protostate = PARSE_BUFF;
             }
+            break;
+
+        case PARSE_BUFF:
             int endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
             if (endcmd_offset == -1) {
-                buff_offset += bytes_read;
+                buff_offset += nbytes_socket;
                 if (buff_offset >= BUFLEN) {
                     printf("Worker buffer overflow\n"); // LOG
                     protostate = ERROR;
                 } else {
-                    printf("Incomplete command, going back to reading the socket\n"); // LOG
-                    protostate = READ_BUFF;
                     // if the command is incomplete, the worker remains reading the
                     // bytes sent to the socket
+                    printf("Incomplete command, going back to reading the socket\n"); // LOG
+                    protostate = READ_BUFF;
                 }
             } else {
                 memset(cmd, 0, BUFLEN);
-                strncpy(cmd, buffer, endcmd_offset + 1); // stores the command (max of BUFLEN bytes)
+                // stores the command (max of BUFLEN bytes)
+                strncpy(cmd, buffer, endcmd_offset + 1);
+                // saves the content of the buffer located after the command
                 char new_buffer[BUFLEN] = {};
-                if (endcmd_offset < BUFLEN - 1) {
-                    // the \n is not the end character of the buffer
-                    strncpy(new_buffer, buffer + endcmd_offset + 1, BUFLEN - (endcmd_offset + 1));
-                }
+                strncpy(new_buffer, buffer + endcmd_offset + 1, BUFLEN - (endcmd_offset + 1));
                 strncpy(buffer, new_buffer, BUFLEN);
+                ncmds--; // command consumed from the buffer
+                buff_offset = 0; // new command located at the beginning of the buffer
                 protostate = PARSE_CMD;
             }
-
             break;
 
         case PARSE_CMD:
@@ -140,7 +168,7 @@ void* worker(void* args)
             printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
             if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
                 perror("Error in writing the response to ping\n"); // LOG
-                exited = TRUE;
+                protostate = ERROR;
             }
             protostate = READ_BUFF;
             break;
@@ -157,6 +185,10 @@ void* worker(void* args)
                     perror("Error in writing the response to log out\n"); // LOG
                 }
             }
+            exited = TRUE;
+            break;
+
+        case ERROR:
             exited = TRUE;
             break;
 
