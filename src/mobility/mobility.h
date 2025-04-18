@@ -31,8 +31,11 @@ struct mobility_t {
     struct vec2 (*mobility_function_target_pos)(const struct mobility_t);
 
     // Last position recorded.
-    int duration_to_move; // Time in seconds.
     struct vec2 last_coordinates;
+
+    // the next pos to move.
+    int duration_to_move; // Time in seconds.
+    struct vec2 next_coordinates;
 };
 
 // ----------------------------------------------------------------------

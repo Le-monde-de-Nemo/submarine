@@ -68,8 +68,9 @@ init_mobility(const char* name, const struct vec2 init_pos)
 {
     struct mobility_t mob = {
         .mobility_function_name = name,
+        .last_coordinates = init_pos,
         .duration_to_move = 0, // 0 seconds by default when fish is created.
-        .last_coordinates = init_pos
+        .next_coordinates = init_pos // By default the fish is stopped.
     };
 
     get_mobility_function_duration(name,

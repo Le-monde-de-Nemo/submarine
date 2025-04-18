@@ -213,8 +213,12 @@ struct fish_t fish__update_mobility(const struct fish_t fish)
     struct fish_t new_fish = fish__set_current_pos(
         fish__get_target_pos(fish),
         fish);
+
     new_fish.mob.last_coordinates = fish__get_current_pos(fish);
+
     new_fish.mob.duration_to_move = fish.mob.mobility_function_duration(fish.mob);
+
+    new_fish.mob.next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
 
     return new_fish;
 }
@@ -223,7 +227,7 @@ struct fish_t fish__update_mobility(const struct fish_t fish)
 
 struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
-    return fish.mob.mobility_function_target_pos(fish.mob);
+    return fish.mob.next_coordinates;
 }
 
 // --------------------------------------------------------------------------
