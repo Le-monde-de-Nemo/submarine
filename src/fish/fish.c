@@ -99,6 +99,11 @@ const char* fish__get_mobility_func(const struct fish_t fish)
     return fish.mobility_function_name;
 }
 
+struct vec2 fish__get_width_height(const struct fish_t fish)
+{
+    return figure__get_width_height(fish.fig);
+}
+
 // ----------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t fish)

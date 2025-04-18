@@ -78,6 +78,8 @@ const char* fish__get_name(const struct fish_t fish);
  */
 const char* fish__get_mobility_func(const struct fish_t fish);
 
+struct vec2 fish__get_width_height(const struct fish_t fish);
+
 // ----------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t fish);
