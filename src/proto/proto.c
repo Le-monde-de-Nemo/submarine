@@ -44,13 +44,14 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
             fish__get_target_pos(fish).y - origin.y,
             fish__get_move_duration(fish));
 
-        if (n_acc + len < n) {
+        if (n_acc + len < n - 1) {
             strcat(acc, fish_buffer);
             n_acc += len;
         }
     }
-
+    strcat(acc, "\n");
     strcpy(dst, acc);
+
     return dst;
 }
 
