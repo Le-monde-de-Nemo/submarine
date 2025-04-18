@@ -16,6 +16,10 @@
 #define BASIC_FISH_ID -666
 #endif // BASIC_FISH_ID
 
+#ifndef MAX_SIZE_NAME_FISH
+#define MAX_SIZE_NAME_FISH 64
+#endif // MAX_SIZE_NAME_FISH
+
 /* Used to convert the fish name into an integer.
  *          Returning example:
  *
@@ -34,7 +38,7 @@ int convert_name_to_id(const char* name);
  * If we put the struct in `src/fish/fish.c` we will need to use malloc.
  */
 struct fish_t {
-    const char* name_fish; // The corresponding id is figure__get_id(fig).
+    char* name_fish; // The corresponding id is figure__get_id(fig).
     int is_started; // 0 means not, 1 or other things mean yes.
     struct figure_t fig;
 
@@ -66,7 +70,7 @@ fish__init_fish(const char* name_fish,
 
 int fish__get_id(const struct fish_t fish);
 
-const char* fish__get_name(const struct fish_t fish);
+char* fish__get_name(const struct fish_t fish);
 
 /* Returning Examples:
  *  "RandomWayPoint";

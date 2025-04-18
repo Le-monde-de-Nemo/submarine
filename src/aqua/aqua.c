@@ -227,6 +227,7 @@ aqua__del_fish(const char* name_fish, const struct aqua_t aqua)
 
     struct slisthead_fish new_head = aqua.list_fishes;
     SLIST_REMOVE(&new_head, n1, aqua__entry_fish_t, entries);
+    fish__destroy_fish(n1->data);
     free(n1->data); // Fish is copied outside the stack.
     free(n1);
 
@@ -420,6 +421,7 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
     while (!SLIST_EMPTY(&head_fish)) {
         n2 = SLIST_FIRST(&head_fish);
         SLIST_REMOVE_HEAD(&head_fish, entries);
+        fish__destroy_fish(n2->data);
         free(n2->data);
         free(n2);
         ptr_aqua->nb_fishes -= 1;

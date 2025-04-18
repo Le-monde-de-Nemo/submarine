@@ -50,13 +50,29 @@ int convert_name_to_id(const char* name)
     return to_return;
 }
 
-const char* get_name(const char* name)
+/* It does locally the copy of the name to store it in the struct. */
+char* get_name(const char* name)
 {
+    char* new_name;
+
     if (!name) {
-        return "BasicFish";
+        new_name = (char*)malloc(MAX_SIZE_NAME_FISH * sizeof(char));
+        if (!new_name) {
+            fprintf(stderr, "ptr for new_name is NULL.\n");
+        }
+
+        const char name_to_put[] = "BasicFish";
+        strcpy(new_name, name_to_put);
+    } else {
+        new_name = (char*)malloc(MAX_SIZE_NAME_FISH * sizeof(char));
+        if (!new_name) {
+            fprintf(stderr, "ptr for new_name is NULL.\n");
+        }
+
+        strcpy(new_name, name);
     }
 
-    return name;
+    return new_name;
 }
 
 // --------------------------------------------------------------------------
@@ -89,7 +105,7 @@ int fish__get_id(const struct fish_t fish)
     return figure__get_id(fish.fig);
 }
 
-const char* fish__get_name(const struct fish_t fish)
+char* fish__get_name(const struct fish_t fish)
 {
     return fish.name_fish;
 }
@@ -215,6 +231,10 @@ int fish__destroy_fish(struct fish_t* ptr_fish)
 {
     if (!ptr_fish) {
         return 0;
+    }
+
+    if (ptr_fish->name_fish) {
+        free(ptr_fish->name_fish);
     }
 
     figure__destroy_figure(&(ptr_fish->fig));
