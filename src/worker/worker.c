@@ -210,7 +210,7 @@ void* worker(void* args)
                 exited = TRUE;
             }
 
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case ADD_FISH:
@@ -218,7 +218,7 @@ void* worker(void* args)
 
             if (current_vue == NULL) {
                 fprintf(stderr, "%p\n", current_vue);
-                protostate = READ_BUFF;
+                protostate = CLEAN_VARS;
                 break;
             }
 
@@ -248,7 +248,7 @@ void* worker(void* args)
                 exited = TRUE;
             }
 
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case DEL_FISH:
@@ -256,7 +256,7 @@ void* worker(void* args)
 
             if (current_vue == NULL) {
                 fprintf(stderr, "%p\n", current_vue);
-                protostate = READ_BUFF;
+                protostate = CLEAN_VARS;
                 break;
             }
 
@@ -272,7 +272,7 @@ void* worker(void* args)
                 exited = TRUE;
             }
 
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case START_FISH:
@@ -280,7 +280,7 @@ void* worker(void* args)
 
             if (current_vue == NULL) {
                 fprintf(stderr, "%p\n", current_vue);
-                protostate = READ_BUFF;
+                protostate = CLEAN_VARS;
                 break;
             }
 
@@ -296,7 +296,7 @@ void* worker(void* args)
                 exited = TRUE;
             }
 
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case GET_FISHES:
@@ -304,7 +304,7 @@ void* worker(void* args)
 
             if (current_vue == NULL) {
                 fprintf(stderr, "%p\n", current_vue);
-                protostate = READ_BUFF;
+                protostate = CLEAN_VARS;
                 break;
             }
 
@@ -322,7 +322,7 @@ void* worker(void* args)
 
             free(fishes);
 
-            protostate = READ_BUFF;
+            protostate = CLEAN_VARS;
             break;
 
         case PING:
