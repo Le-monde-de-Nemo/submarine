@@ -2,6 +2,7 @@
 #define __FISH__H__
 
 #include "figure.h"
+#include "mobility.h"
 #include "vec2.h"
 
 // ----------------------------------------------------------------------
@@ -10,6 +11,7 @@
 //      Dependencies:
 //              - `figure.h` for the id, coordinates, and size.
 //              - `vec2.h` for the coordinates.
+//              - `mobility.h` for the mobility information of the fish.
 // ----------------------------------------------------------------------
 
 #ifndef BASIC_FISH_ID
@@ -38,11 +40,9 @@ struct fish_t {
     int is_started; // 0 means not, 1 or other things mean yes.
     struct figure_t fig;
 
-    // To know where and when the fish will go, given a former position.
-    // See `src/fish/fish.c`.
-    int (*mobility_function_duration)();
-    struct vec2 (*mobility_function_target_pos)();
-    const char* mobility_function_name;
+    // To store the mobility information of a fish.
+    // See `src/mobility/mobility.h`.
+    struct mobility_t mob;
 };
 
 // ----------------------------------------------------------------------

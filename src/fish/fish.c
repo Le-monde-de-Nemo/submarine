@@ -33,7 +33,7 @@
 #include "mobility.h"
 #include "vec2.h"
 
-// ----------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 int convert_name_to_id(const char* name)
 {
@@ -71,18 +71,13 @@ fish__init_fish(const char* name_fish,
         .name_fish = get_name(name_fish),
         .is_started = 0, // Not started by default.
         .fig = figure__init_figure(id, pos, size),
-        .mobility_function_name = mobility_func
+        .mob = init_mobility(mobility_func, pos)
     };
-
-    get_mobility_function_duration(mobility_func,
-        &(fish.mobility_function_duration));
-    get_mobility_function_target_pos(mobility_func,
-        &(fish.mobility_function_target_pos));
 
     return fish;
 }
 
-// ----------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 int fish__get_id(const struct fish_t fish)
 {
@@ -96,7 +91,7 @@ const char* fish__get_name(const struct fish_t fish)
 
 const char* fish__get_mobility_func(const struct fish_t fish)
 {
-    return fish.mobility_function_name;
+    return fish.mob.mobility_function_name;
 }
 
 struct vec2 fish__get_width_height(const struct fish_t fish)
@@ -104,7 +99,7 @@ struct vec2 fish__get_width_height(const struct fish_t fish)
     return figure__get_width_height(fish.fig);
 }
 
-// ----------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 int fish__is_started(const struct fish_t fish)
 {
@@ -117,9 +112,7 @@ struct fish_t fish__start_fish(struct fish_t fish)
         .name_fish = fish.name_fish,
         .is_started = 1,
         .fig = fish.fig,
-        .mobility_function_duration = fish.mobility_function_duration,
-        .mobility_function_target_pos = fish.mobility_function_target_pos,
-        .mobility_function_name = fish.mobility_function_name
+        .mob = fish.mob,
     };
 
     return new_fish;
@@ -131,9 +124,7 @@ struct fish_t fish__stop_fish(struct fish_t fish)
         .name_fish = fish.name_fish,
         .is_started = 0,
         .fig = fish.fig,
-        .mobility_function_duration = fish.mobility_function_duration,
-        .mobility_function_target_pos = fish.mobility_function_target_pos,
-        .mobility_function_name = fish.mobility_function_name
+        .mob = fish.mob,
     };
 
     return new_fish;
@@ -144,8 +135,8 @@ struct fish_t fish__stop_fish(struct fish_t fish)
 char* fish__disp(const struct fish_t fish, char* dst, long n)
 {
     struct vec2 coord = figure__get_current_pos(fish.fig);
-    struct vec2 next_coord = fish.mobility_function_target_pos();
-    int duration = fish.mobility_function_duration();
+    struct vec2 next_coord = fish.mob.mobility_function_target_pos(fish.mob);
+    int duration = fish.mob.mobility_function_duration(fish.mob);
 
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]\n",
@@ -160,8 +151,8 @@ char* fish__disp(const struct fish_t fish, char* dst, long n)
 char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
 {
     struct vec2 coord = figure__get_current_pos(fish.fig);
-    struct vec2 next_coord = fish.mobility_function_target_pos();
-    int duration = fish.mobility_function_duration();
+    struct vec2 next_coord = fish.mob.mobility_function_target_pos(fish.mob);
+    int duration = fish.mob.mobility_function_duration(fish.mob);
 
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]",
@@ -187,9 +178,7 @@ fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
         .name_fish = fish.name_fish,
         .is_started = fish.is_started,
         .fig = figure__set_current_pos(pos, fish.fig),
-        .mobility_function_duration = fish.mobility_function_duration,
-        .mobility_function_target_pos = fish.mobility_function_target_pos,
-        .mobility_function_name = fish.mobility_function_name
+        .mob = fish.mob
     };
 
     return new_fish;
@@ -199,14 +188,14 @@ fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
 
 struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
-    return fish.mobility_function_target_pos();
+    return fish.mob.mobility_function_target_pos(fish.mob);
 }
 
 // --------------------------------------------------------------------------
 
 int fish__get_move_duration(const struct fish_t fish)
 {
-    return fish.mobility_function_duration();
+    return fish.mob.mobility_function_duration(fish.mob);
 }
 
 // --------------------------------------------------------------------------
