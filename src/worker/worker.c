@@ -22,9 +22,9 @@ enum PROTOSTATES {
     PING,
     HELLO, /* hello */
     GET_FISHES, /* getFishes */
-    ADD_FISH, /* getFishes */
-    DEL_FISH, /* getFishes */
-    START_FISH, /* getFishes */
+    ADD_FISH, /* addFish */
+    DEL_FISH, /* delFish */
+    START_FISH, /* startFish */
     LOGOUT,
     ERROR
 };
@@ -188,15 +188,26 @@ void* worker(void* args)
                 break;
             }
 
+            struct fish_t* fishExists = aqua__get_fish(words[1], global_aqua);
+            int already_exists = (fishExists != NULL);
+
             // PoissonRouge at 90x40,10x4, RandomWayPoint
             int x_pos = -1, y_pos = -1;
-            int x_target = -1, y_target = -1;
-            struct vec2 pos = vec2__create(x_pos, y_pos);
-            struct vec2 target = vec2__create(x_target, y_target);
+            int width = -1, height = -1;
+            struct vec2 pos, size;
+            struct fish_t fish2add;
 
-            // struct fish_t fish2add = fish__init_fish(words[1], pos, size, const char *mobility_func)
+            if (!already_exists) {
+                sscanf(words[3], "%dx%d,%dx%d", &x_pos, &y_pos, &width, &height);
 
-            // proto__add_fish(writebuf, BUFLEN, fishes, nb_fishes);
+                pos = vec2__create(x_pos, y_pos);
+                size = vec2__create(width, height);
+
+                fish2add = fish__init_fish(words[1], pos, size, words[4]);
+                global_aqua = aqua__add_fish(fish2add, global_aqua);
+            }
+
+            proto__add_fish(writebuf, BUFLEN, already_exists);
 
             if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
                 perror("Error in writing the response to ping\n"); // LOG
@@ -215,10 +226,10 @@ void* worker(void* args)
                 break;
             }
 
-            struct fish_t* fish2add = aqua__get_fish(words[1], global_aqua);
-            int already_exists = (fish2add != NULL);
+            struct fish_t* fish2del = aqua__get_fish(words[1], global_aqua);
+            already_exists = (fish2del != NULL);
             if (already_exists)
-                aqua__del_fish(words[1], global_aqua);
+                global_aqua = aqua__del_fish(words[1], global_aqua);
 
             proto__del_fish(writebuf, BUFLEN, already_exists);
 
@@ -275,11 +286,14 @@ void* worker(void* args)
                 exited = TRUE;
             }
 
+            free(fishes);
+
             protostate = READ_BUFF;
             break;
 
         case PING:
-            printf("in PING:\n"); // LOG
+            bzero(writebuf, sizeof(writebuf));
+
             char* pingval = words[1];
             proto__ping(writebuf, sizeof(writebuf), pingval);
             printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
