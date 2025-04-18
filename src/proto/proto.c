@@ -1,6 +1,7 @@
 #include "proto.h"
 #include "aqua.h"
 #include "fish.h"
+#include "vec2.h"
 #include "vue.h"
 #include <stdio.h>
 #include <string.h>
@@ -22,7 +23,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
     return dst;
 }
 
-char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes)
+char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vec2 origin)
 {
     char acc[n];
     char fish_buffer[n];
@@ -36,10 +37,10 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes)
         struct fish_t fish = fishes[i];
         int len = snprintf(fish_buffer, n, "[%s at %dx%d,%dx%d,%d] ",
             fish__get_name(fish),
-            fish__get_current_pos(fish).x,
-            fish__get_current_pos(fish).y,
-            fish__get_target_pos(fish).x,
-            fish__get_target_pos(fish).y,
+            fish__get_current_pos(fish).x - origin.x,
+            fish__get_current_pos(fish).y - origin.x,
+            fish__get_target_pos(fish).x - origin.x,
+            fish__get_target_pos(fish).y - origin.y,
             fish__get_move_duration(fish));
 
         if (n_acc + len < n) {
