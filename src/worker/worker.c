@@ -20,7 +20,7 @@ enum PROTOSTATES {
 /**
  * Verifies if the buffer contains a full cmd (i.e. contains a \n).
  * Returns -1 if the buffer doesn't contain a command, and the
- * offset indicating the \n character otherwise
+ * offset indicating the first \n character otherwise
  */
 int worker__find_cmd_in_buffer(char* buffer, int buff_offset)
 {
@@ -35,7 +35,7 @@ int worker__find_cmd_in_buffer(char* buffer, int buff_offset)
 /**
  * Separates words separated by spaces
  */
-void worker__parse_words(char* input, char* words[])
+void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
 {
     int inp_size = strlen(input);
     int widx = 0;
@@ -59,11 +59,11 @@ enum PROTOSTATES worker__get_command_state(char* command)
 {
     enum PROTOSTATES retval;
 
-    if (strncmp(command, "ping", BUFLEN) == 0) {
+    if (strncmp(command, "ping", 4) == 0) {
         retval = PING;
-    } else if (strncmp(command, "log", BUFLEN == 0)) { // add other commands
+    } else if (strncmp(command, "log", 3) == 0) {
         retval = LOGOUT;
-    } else {
+    } else { // add other commands
         retval = ERROR;
     }
 
@@ -83,18 +83,14 @@ void* worker(void* args)
     char buffer[BUFLEN] = {}; // buffer (stores the commands from byte 0)
     int buff_offset = 0; // offset for unfinished commands
     char cmd[BUFLEN] = {}; // command read from buffer
-    char* words[COMMWORDS]; // words of the command
-
-    for (int i = 0; i < COMMWORDS; i++) {
-        words[i] = malloc(BUFLEN * sizeof(char));
-        strcpy(words[i], "\0");
-    }
+    char words[COMMWORDS][BUFLEN] = {}; // words of the command
 
     // FSM - execution of the commands from the "affichage <-> controlleur" protocol
     int protostate = READ_BUFF;
     int exited = FALSE;
 
     while (!exited) {
+
         switch (protostate) {
         case READ_BUFF:
             printf("in READ_BUFF:\n"); // LOG
@@ -151,13 +147,17 @@ void* worker(void* args)
 
         case LOGOUT:
             printf("in LOGOUT:\n"); // LOG
-            if (strncpy(words[1], "out", BUFLEN) != 0) {
+            if (strncmp(words[1], "out", 3) != 0) {
                 fprintf(stderr, "Invalid log out command\n"); // LOG
-                exited = TRUE;
             } else {
-                exited = TRUE;
-                // à finir!
+                char writebuf[BUFLEN];
+                proto__log(writebuf, sizeof(writebuf));
+                printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
+                if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                    perror("Error in writing the response to log out\n"); // LOG
+                }
             }
+            exited = TRUE;
             break;
 
         default:
@@ -167,10 +167,6 @@ void* worker(void* args)
     }
 
     // Cleaning
-    for (int i = 0; i < COMMWORDS; i++) {
-        free(words[i]);
-    }
-
     close(sockfd);
 
     printf("Exiting worker thread...\n"); // LOG
