@@ -13,6 +13,7 @@ enum PROTOSTATES {
     READ_BUFF,
     PARSE_CMD,
     PING,
+    LOGOUT,
     ERROR
 };
 
@@ -60,7 +61,9 @@ enum PROTOSTATES worker__get_command_state(char* command)
 
     if (strncmp(command, "ping", BUFLEN) == 0) {
         retval = PING;
-    } else { // add other commands
+    } else if (strncmp(command, "log", BUFLEN == 0)) { // add other commands
+        retval = LOGOUT;
+    } else {
         retval = ERROR;
     }
 
@@ -74,7 +77,7 @@ enum PROTOSTATES worker__get_command_state(char* command)
  */
 void* worker(void* args)
 {
-    printf("Starting worker thread...\n");
+    printf("Starting worker thread...\n"); // LOG
 
     int sockfd = (int)(long)args;
     char buffer[BUFLEN] = {}; // buffer (stores the commands from byte 0)
@@ -98,17 +101,17 @@ void* worker(void* args)
             int bytes_read = read(sockfd, buffer + buff_offset, BUFLEN - buff_offset);
             // wait until a command is received
             if (bytes_read == -1) {
-                perror("Error when reading the socket");
+                perror("Error when reading the socket\n"); // LOG
                 protostate = ERROR;
             }
             int endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
             if (endcmd_offset == -1) {
                 buff_offset += bytes_read;
                 if (buff_offset >= BUFLEN) {
-                    printf("Worker buffer overflow"); // LOG
+                    printf("Worker buffer overflow\n"); // LOG
                     protostate = ERROR;
                 } else {
-                    printf("Incomplete command, going back to reading the socket"); // LOG
+                    printf("Incomplete command, going back to reading the socket\n"); // LOG
                     protostate = READ_BUFF;
                     // if the command is incomplete, the worker remains reading the
                     // bytes sent to the socket
@@ -134,19 +137,31 @@ void* worker(void* args)
             break;
 
         case PING:
-            printf("in PING:\n");
+            printf("in PING:\n"); // LOG
             char* pingval = words[1];
             char writebuf[BUFLEN];
             proto__ping(writebuf, sizeof(writebuf), pingval);
             printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
             if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-                perror("Error in writing the response to ping\n");
+                perror("Error in writing the response to ping\n"); // LOG
                 exited = TRUE;
             }
             protostate = READ_BUFF;
             break;
+
+        case LOGOUT:
+            printf("in LOGOUT:\n"); // LOG
+            if (strncpy(words[1], "out", BUFLEN) != 0) {
+                fprintf(stderr, "Invalid log out command\n"); // LOG
+                exited = TRUE;
+            } else {
+                exited = TRUE;
+                // à finir!
+            }
+            break;
+
         default:
-            perror("Invalid FSM protocol state");
+            fprintf(stderr, "Invalid FSM protocol state\n"); // LOG
             exited = TRUE;
         }
     }
@@ -158,6 +173,6 @@ void* worker(void* args)
 
     close(sockfd);
 
-    printf("Exiting worker thread...\n");
+    printf("Exiting worker thread...\n"); // LOG
     return NULL;
 }
