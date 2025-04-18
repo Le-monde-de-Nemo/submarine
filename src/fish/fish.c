@@ -94,6 +94,18 @@ const char* fish__get_mobility_func(const struct fish_t fish)
     return fish.mob.mobility_function_name;
 }
 
+int fish__get_last_duration(const struct fish_t fish)
+{
+    return fish.mob.last_duration;
+}
+
+struct vec2 fish__get_last_pos(const struct fish_t fish)
+{
+    return fish.mob.last_coordinates;
+}
+
+// --------------------------------------------------------------------------
+
 struct vec2 fish__get_width_height(const struct fish_t fish)
 {
     return figure__get_width_height(fish.fig);

@@ -68,6 +68,8 @@ int fish__get_id(const struct fish_t fish);
 
 const char* fish__get_name(const struct fish_t fish);
 
+// ----------------------------------------------------------------------
+
 /* Returning Examples:
  *  "RandomWayPoint";
  *  "DirectWayPoint";
@@ -77,6 +79,12 @@ const char* fish__get_name(const struct fish_t fish);
  *  Returns NULL if the fish does not exist or if the mob func is not init.
  */
 const char* fish__get_mobility_func(const struct fish_t fish);
+
+int fish__get_last_duration(const struct fish_t fish);
+
+struct vec2 fish__get_last_pos(const struct fish_t fish);
+
+// ----------------------------------------------------------------------
 
 struct vec2 fish__get_width_height(const struct fish_t fish);
 
