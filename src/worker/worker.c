@@ -58,9 +58,10 @@ int worker__find_cmd_in_buffer(char* buffer, int buff_offset)
 }
 
 /**
- * Separates words separated by spaces. The input string must end with \n
+ * Separates words separated by spaces. The input string must end with \n.
+ * Returns the number of words in the words array
  */
-void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
+int worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
 {
     int inp_size = strlen(input);
     int widx = 0;
@@ -79,6 +80,7 @@ void worker__parse_words(char* input, char words[COMMWORDS][BUFLEN])
             words[widx][woff++] = input[i];
         }
     }
+    return widx + 1;
 }
 
 /**
@@ -123,6 +125,7 @@ void* worker(void* args)
     int buff_offset = 0; // offset for unfinished commands
     char cmd[BUFLEN] = {}; // command read from buffer
     char words[COMMWORDS][BUFLEN] = {}; // words of the command
+    int nwords = 0; // number of words in the words array
     int ncmds = 0; // number of commands stored in the buffer
     int nbytes_socket = 0; // number of bytes read on the last call of read(sockfd)
     char writebuf[BUFLEN];
@@ -188,7 +191,8 @@ void* worker(void* args)
 
         case PARSE_CMD:
             printf("in PARSE_CMD:\n"); // LOG
-            worker__parse_words(cmd, words);
+            nwords = worker__parse_words(cmd, words);
+            printf("\tnwords = %d\n", nwords); // LOG
             protostate = worker__get_command_state(words[0]);
             break;
 
