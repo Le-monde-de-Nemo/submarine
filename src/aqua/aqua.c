@@ -255,6 +255,7 @@ aqua__get_fish(const char* name_fish, const struct aqua_t aqua)
         return NULL;
     }
 
+    *(n1->data) = fish__update_mobility(*(n1->data));
     return n1->data;
 }
 
@@ -278,6 +279,7 @@ aqua__get_fishes(const struct aqua_t aqua)
     struct aqua__entry_fish_t* np;
     SLIST_FOREACH(np, &head, entries)
     {
+        *(np->data) = fish__update_mobility(*(np->data));
         array[index_array++] = *(np->data);
     }
 

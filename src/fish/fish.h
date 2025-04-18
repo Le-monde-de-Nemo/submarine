@@ -80,10 +80,6 @@ const char* fish__get_name(const struct fish_t fish);
  */
 const char* fish__get_mobility_func(const struct fish_t fish);
 
-int fish__get_last_duration(const struct fish_t fish);
-
-struct vec2 fish__get_last_pos(const struct fish_t fish);
-
 // ----------------------------------------------------------------------
 
 struct vec2 fish__get_width_height(const struct fish_t fish);
@@ -97,7 +93,7 @@ struct fish_t fish__stop_fish(struct fish_t fish);
 // ----------------------------------------------------------------------
 // To display a fish, it uses snprintf.
 //              Format:
-//                  `"[PoissonRouge at fish_xxfish_y,size_xxsize_y,id]"`
+//                  `"[PoissonRouge at fish_xxfish_y,last_xxlast_y,time]"`
 //
 //      It writes at most n chars to dst to display *fish*.
 //
@@ -122,6 +118,16 @@ char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n);
 struct vec2 fish__get_current_pos(const struct fish_t fish);
 struct fish_t
 fish__set_current_pos(const struct vec2 pos, struct fish_t fish);
+
+// ----------------------------------------------------------------------
+// To update the fish mobility. It will be called by the `aquarium`.
+//          This will call the `mobility` functions
+//                                  in `src/mobility/mobility.h`.
+//
+//              If the fish is not started, it does nothing.
+// ----------------------------------------------------------------------
+
+struct fish_t fish__update_mobility(const struct fish_t);
 
 // ----------------------------------------------------------------------
 // To access to the next pos of the fish, given his mobility functions.
