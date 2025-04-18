@@ -43,9 +43,18 @@ struct controller_t controller__load_conf(char* filepath)
     char key[CONF_BUF_SIZE] = {};
     char value[CONF_BUF_SIZE] = {};
 
+    char* ht_pos = NULL;
+    char* eq_pos = NULL;
+
     FILE* file = fopen(filepath, "r");
 
     while (fgets(read_buf, CONF_BUF_SIZE, file) != NULL) {
+        if ((ht_pos = strchr(read_buf, '#')))
+            *ht_pos = '\0';
+
+        if (!(eq_pos = strchr(read_buf, '=')))
+            continue;
+
         sscanf(read_buf, "%s = %s", key, value);
 
         if (strcmp(key, conf_item__disp(CONTROLLER_PORT)) == 0)
