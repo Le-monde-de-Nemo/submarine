@@ -13,7 +13,7 @@
 
 enum mobility_functions {
     RANDOM_WAY_POINT, // 0
-    DIRECT_WAY_POINT, // 1
+    DIAGONAL_WAY_POINT, // 1
     NUM_MOBILITY_FUNCTIONS
 };
 
@@ -95,15 +95,15 @@ struct vec2 random_way_point_target_pos(const struct mobility_t mob);
 
 // ----------------------------------------------------------------------
 // Mobility Function
-//      id: 0.
-//      name: "DirectWayPoint".
-//      spec: give the most direct way to go to a given position.
+//      id: 1.
+//      name: "DiagonalWayPoint".
+//      spec: It does a diagonal from (0, 0) to (100, 100).
 //
 //  See `src/fish/fish.c`
 // ----------------------------------------------------------------------
 
-int direct_way_point_duration(const struct mobility_t mob);
-struct vec2 direct_way_point_target_pos(const struct mobility_t mob);
+int diagonal_way_point_duration(const struct mobility_t mob);
+struct vec2 diagonal_way_point_target_pos(const struct mobility_t mob);
 
 // ----------------------------------------------------------------------
 

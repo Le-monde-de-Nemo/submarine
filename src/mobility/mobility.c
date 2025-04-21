@@ -6,6 +6,7 @@
 // --------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -19,17 +20,17 @@
 /* The names in that array need to be different! */
 static const char* array_mobility_function_names[NUM_MOBILITY_FUNCTIONS] = {
     "RandomWayPoint",
-    "DirectWayPoint"
+    "DiagonalWayPoint"
 };
 
 static int (*array_mobility_function_duration[NUM_MOBILITY_FUNCTIONS])(const struct mobility_t) = {
     random_way_point_duration,
-    direct_way_point_duration
+    diagonal_way_point_duration
 };
 
 static struct vec2 (*array_mobility_function_target_pos[NUM_MOBILITY_FUNCTIONS])(const struct mobility_t) = {
     random_way_point_target_pos,
-    direct_way_point_target_pos
+    diagonal_way_point_target_pos
 };
 
 // --------------------------------------------------------------------------
@@ -97,28 +98,42 @@ init_mobility(const char* name, const struct vec2 init_pos)
 
 int random_way_point_duration(const struct mobility_t mob)
 {
-    // TODO
-    return 0;
+    return 5;
 }
 
 struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 {
-    // TODO
-    return vec2__zeros();
+    srand(mobility_get_timestamp());
+    struct vec2 to_return = vec2__zeros();
+    to_return.x = rand() % 100;
+    to_return.y = rand() % 100;
+
+    return to_return;
 }
 
 // --------------------------------------------------------------------------
 
-int direct_way_point_duration(const struct mobility_t mob)
+int diagonal_way_point_duration(const struct mobility_t mob)
 {
-    // TODO
-    return 0;
+    if (mob.next_coordinates.x != 100 || mob.next_coordinates.y != 100) {
+        return 5;
+    }
+
+    return 10;
 }
 
-struct vec2 direct_way_point_target_pos(const struct mobility_t mob)
+struct vec2 diagonal_way_point_target_pos(const struct mobility_t mob)
 {
-    // TODO
-    return vec2__zeros();
+    // The fish has not been updated yet even if he reached `next_coordinates`.
+    struct vec2 current_pos = mob.next_coordinates;
+    struct vec2 to_return = vec2__zeros();
+
+    if (current_pos.x == 0 && current_pos.y == 0) {
+        to_return.x = 100;
+        to_return.y = 100;
+    }
+
+    return to_return;
 }
 
 // --------------------------------------------------------------------------
