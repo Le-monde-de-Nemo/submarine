@@ -2,6 +2,7 @@
 #define __MOBILITY__H__
 
 #include "vec2.h"
+#include <time.h>
 
 // ----------------------------------------------------------------------
 // To know how a fish moves.
@@ -37,12 +38,19 @@ struct mobility_t {
     //          before one fish reached his goal.
     // The idea here is to compare timestamps
     //          to ensure the move duration is over.
-    int last_timestamp; // TODO
+    time_t last_timestamp;
 
     // the next pos to move.
     int duration_to_move; // Time in seconds.
     struct vec2 next_coordinates;
 };
+
+// ----------------------------------------------------------------------
+// A function to get the current timestamp.
+//                   It returns seconds since `January 1, 1970`.
+// ----------------------------------------------------------------------
+
+time_t mobility_get_timestamp();
 
 // ----------------------------------------------------------------------
 // To get the right mobility functions.

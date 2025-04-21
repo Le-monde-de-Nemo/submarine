@@ -5,7 +5,9 @@
 //              - `vec2.h` for the coordinates, and sizes.
 // --------------------------------------------------------------------------
 
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "mobility.h"
 #include "vec2.h"
@@ -29,6 +31,13 @@ static struct vec2 (*array_mobility_function_target_pos[NUM_MOBILITY_FUNCTIONS])
     random_way_point_target_pos,
     direct_way_point_target_pos
 };
+
+// --------------------------------------------------------------------------
+
+time_t mobility_get_timestamp()
+{
+    return time(NULL);
+}
 
 // --------------------------------------------------------------------------
 
@@ -69,6 +78,7 @@ init_mobility(const char* name, const struct vec2 init_pos)
     struct mobility_t mob = {
         .mobility_function_name = name,
         .last_coordinates = init_pos,
+        .last_timestamp = mobility_get_timestamp(),
         .duration_to_move = 0, // 0 seconds by default when fish is created.
                                // Because it already reached its target pos.
         .next_coordinates = init_pos // By default the fish is stopped.

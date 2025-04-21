@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "figure.h"
 #include "fish.h"
@@ -193,16 +194,21 @@ struct fish_t fish__update_mobility(const struct fish_t fish)
         return fish;
     }
 
-    // TODO: compare timestamp.
-
-    // If the duration to move is over, then give another goal to the fish.
+    time_t current_timestamp = mobility_get_timestamp();
     struct fish_t new_fish = fish__set_current_pos(
         fish__get_target_pos(fish),
         fish);
+    new_fish.mob.last_timestamp = current_timestamp;
+
+    // <is the last mobility finished?>
+    time_t current_mob_duration = current_timestamp - fish.mob.last_timestamp;
+    if (current_mob_duration < fish__get_move_duration(fish)) {
+        return new_fish;
+    } // </is the last mobility finished?>
 
     // Now the fish reached his target, because move duration is over.
+    // Then, give another goal to the fish.
     new_fish.mob.last_coordinates = fish__get_current_pos(fish);
-
     new_fish.mob.duration_to_move = fish.mob.mobility_function_duration(fish.mob);
     new_fish.mob.next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
 
