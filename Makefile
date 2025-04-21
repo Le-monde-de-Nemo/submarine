@@ -10,6 +10,7 @@ tst_mains+=${tst_dir}/vectors.c
 tst_mains+=${tst_dir}/fish.c
 tst_mains+=${tst_dir}/vue.c
 tst_mains+=${tst_dir}/aqua.c
+tst_mains+=${tst_dir}/mobility.c
 
 # You shouldn't need to edit what's next
 build_tst_targets=$(patsubst ${tst_dir}/%.c,${build_dir}/%,${tst_mains})
