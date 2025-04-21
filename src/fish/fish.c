@@ -7,7 +7,6 @@
 //              - `mobility.h` for the mobility functions.
 //
 //      The structure contains:
-//          - a specie, COMMON is the by default specie.
 //          - a fig, which is the id, the pos and the size of the fish.
 //              See `src/figure/figure.h`
 //          - mobility functions which are how the fish moves.
@@ -152,31 +151,15 @@ struct fish_t fish__stop_fish(struct fish_t fish)
 
 char* fish__disp(const struct fish_t fish, char* dst, long n)
 {
-    struct vec2 coord = fish__get_current_pos(fish);
-    struct vec2 next_coord = fish.mob.mobility_function_target_pos(fish.mob);
-    int duration = fish.mob.mobility_function_duration(fish.mob);
-
-    snprintf(dst, n,
-        "[%s at %dx%d,%dx%d,%d]\n",
-        fish.name_fish,
-        next_coord.x, next_coord.y,
-        coord.x, coord.y,
-        duration);
-
-    return dst;
-}
-
-char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n)
-{
-    struct vec2 coord = fish__get_current_pos(fish);
-    struct vec2 next_coord = fish.mob.mobility_function_target_pos(fish.mob);
-    int duration = fish.mob.mobility_function_duration(fish.mob);
+    struct vec2 size = fish__get_width_height(fish);
+    struct vec2 next_coord = fish__get_target_pos(fish);
+    int duration = fish__get_move_duration(fish);
 
     snprintf(dst, n,
         "[%s at %dx%d,%dx%d,%d]",
         fish.name_fish,
         next_coord.x, next_coord.y,
-        coord.x, coord.y,
+        size.x, size.y,
         duration);
 
     return dst;
@@ -210,14 +193,17 @@ struct fish_t fish__update_mobility(const struct fish_t fish)
         return fish;
     }
 
+    // TODO: compare timestamp.
+
+    // If the duration to move is over, then give another goal to the fish.
     struct fish_t new_fish = fish__set_current_pos(
         fish__get_target_pos(fish),
         fish);
 
+    // Now the fish reached his target, because move duration is over.
     new_fish.mob.last_coordinates = fish__get_current_pos(fish);
 
     new_fish.mob.duration_to_move = fish.mob.mobility_function_duration(fish.mob);
-
     new_fish.mob.next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
 
     return new_fish;

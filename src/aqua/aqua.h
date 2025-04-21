@@ -80,8 +80,6 @@ char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n);
 /* Call `fish__disp()` for every *fish* in the aqua(rium). */
 char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n);
 
-char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n);
-
 // ----------------------------------------------------------------------
 // To manipulate fishes in the aquarium.
 //      For now, there is no fish limit.

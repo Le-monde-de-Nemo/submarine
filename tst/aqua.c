@@ -124,7 +124,7 @@ int test__aqua_add_fish(void)
 
         aqua = aqua__add_fish(fish, aqua);
     }
-    printf("%s\n", aqua__disp_fishes_without_eol(aqua, dst, n));
+    printf("%s\n", aqua__disp_fishes(aqua, dst, n));
     dst[0] = '\0';
 
     struct fish_t* fish = aqua__get_fish(array_name_fishes[50], aqua);

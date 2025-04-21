@@ -70,6 +70,7 @@ init_mobility(const char* name, const struct vec2 init_pos)
         .mobility_function_name = name,
         .last_coordinates = init_pos,
         .duration_to_move = 0, // 0 seconds by default when fish is created.
+                               // Because it already reached its target pos.
         .next_coordinates = init_pos // By default the fish is stopped.
     };
 

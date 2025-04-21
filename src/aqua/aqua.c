@@ -29,6 +29,10 @@
 #define VIEW_CONF_BUF_SIZE 4096
 #endif
 
+#ifndef MAX_BUFFER_SIZE
+#define MAX_BUFFER_SIZE 256
+#endif
+
 // --------------------------------------------------------------------------
 // Used to fastly find a fish or a vue in the current list implementation.
 //                                                  See `sys/queue.h`.
@@ -120,8 +124,8 @@ char* aqua__disp_vues(const struct aqua_t aqua, char* dst, long n)
 
     SLIST_FOREACH(np, &head, entries)
     {
-        char cars_vue[256];
-        vue__disp(*(np->data), cars_vue, 256);
+        char cars_vue[MAX_BUFFER_SIZE];
+        vue__disp(*(np->data), cars_vue, MAX_BUFFER_SIZE);
 
         int res = snprintf(dst + written, n - written, "%s", cars_vue);
         if (res < 0 || res >= (n - written)) {
@@ -143,31 +147,8 @@ char* aqua__disp_fishes(const struct aqua_t aqua, char* dst, long n)
 
     SLIST_FOREACH(np, &head, entries)
     {
-        char cars_fish[256];
-        fish__disp(*(np->data), cars_fish, 256);
-
-        int res = snprintf(dst + written, n - written, "%s", cars_fish);
-        if (res < 0 || res >= (n - written)) {
-            // res < 0 means characters have not been written, including `\0`.
-            return dst;
-        }
-
-        written += res;
-    }
-
-    return dst;
-}
-
-char* aqua__disp_fishes_without_eol(const struct aqua_t aqua, char* dst, long n)
-{
-    struct slisthead_fish head = aqua.list_fishes;
-    struct aqua__entry_fish_t* np;
-    long written = 0;
-
-    SLIST_FOREACH(np, &head, entries)
-    {
-        char cars_fish[256];
-        fish__disp_without_eol(*(np->data), cars_fish, 256);
+        char cars_fish[MAX_BUFFER_SIZE];
+        fish__disp(*(np->data), cars_fish, MAX_BUFFER_SIZE);
 
         int res = snprintf(dst + written, n - written, "%s", cars_fish);
         if (res < 0 || res >= (n - written)) {
@@ -187,9 +168,14 @@ struct aqua_t
 aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
 {
     struct slisthead_fish new_head = aqua.list_fishes;
-    struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
 
-    // <fish copy>, copied on the heap.
+    // <fish already in the aqua?> do not add if it is already existing.
+    if (aqua__get_fish(fish__get_name(fish), aqua) != NULL) {
+        return aqua;
+    } // </fish already in the aqua?>
+
+    // <fish copy>, copy on the heap.
+    struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
     n2->data = (struct fish_t*)malloc(sizeof(struct fish_t));
     if (!(n2->data)) {
         fprintf(stderr, "Impossible to alloc the fish.\n");
@@ -298,9 +284,14 @@ struct aqua_t
 aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
 {
     struct slisthead_vue new_head = aqua.list_vues;
-    struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
+
+    // <vue already in the aqua?> do not add if it is already existing.
+    if (aqua__get_vue(vue__get_id(vue), aqua) != NULL) {
+        return aqua;
+    } // </vue already in the aqua?>
 
     // <vue copy>, copied on the heap.
+    struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
     n1->data = (struct vue_t*)malloc(sizeof(struct vue_t));
     if (!(n1->data)) {
         fprintf(stderr, "Impossible to alloc the vue.\n");

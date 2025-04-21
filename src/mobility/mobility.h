@@ -33,6 +33,12 @@ struct mobility_t {
     // Last position recorded.
     struct vec2 last_coordinates;
 
+    // The displayer could call `get_fishes`
+    //          before one fish reached his goal.
+    // The idea here is to compare timestamps
+    //          to ensure the move duration is over.
+    int last_timestamp; // TODO
+
     // the next pos to move.
     int duration_to_move; // Time in seconds.
     struct vec2 next_coordinates;

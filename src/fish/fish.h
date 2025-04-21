@@ -68,6 +68,10 @@ fish__init_fish(const char* name_fish,
 
 // ----------------------------------------------------------------------
 
+/* To get a unique identifier when calling `fish__init_fish()`.
+ *          The idea is not to use `strcmp` too many times.
+ *          It merely uses the converted fish name into an integer.
+ * */
 int fish__get_id(const struct fish_t fish);
 
 char* fish__get_name(const struct fish_t fish);
@@ -97,20 +101,16 @@ struct fish_t fish__stop_fish(struct fish_t fish);
 // ----------------------------------------------------------------------
 // To display a fish, it uses snprintf.
 //              Format:
-//                  `"[PoissonRouge at fish_xxfish_y,last_xxlast_y,time]"`
+// `"[PoissonRouge at next_pos_xxnext_pos_y,size_xxsize_y,duration]"`
 //
 //      It writes at most n chars to dst to display *fish*.
 //
-//      You can specify if you want the EOL:
-//          `fish__disp` --> there is `\n` at the end of the format.
 //      `...without_eol` --> there is not `\n` at the end of the format.
 //
 //                                          It returns *dst*.
 // ----------------------------------------------------------------------
 
 char* fish__disp(const struct fish_t fish, char* dst, long n);
-
-char* fish__disp_without_eol(const struct fish_t fish, char* dst, long n);
 
 // ----------------------------------------------------------------------
 // To access to the position of the fish.
@@ -129,6 +129,8 @@ fish__set_current_pos(const struct vec2 pos, struct fish_t fish);
 //                                  in `src/mobility/mobility.h`.
 //
 //              If the fish is not started, it does nothing.
+//              If the duration of the last move is not finished,
+//                                              then it does nothing.
 // ----------------------------------------------------------------------
 
 struct fish_t fish__update_mobility(const struct fish_t);
@@ -141,6 +143,11 @@ struct fish_t fish__update_mobility(const struct fish_t);
 //      You should never call directly the mobility functions
 //                                                  from the struct.
 //      Use these functions below instead!
+//
+//                          NB: these functions below do not modify
+//                                  the target of the fish.
+//                              It merely displays the fish goal,
+//                                  created by `fish__update_mobility()`.
 // ----------------------------------------------------------------------
 
 struct vec2 fish__get_target_pos(const struct fish_t fish);
@@ -155,4 +162,5 @@ int fish__get_move_duration(const struct fish_t fish);
 int fish__destroy_fish(struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
+
 #endif // __FISH__H__
