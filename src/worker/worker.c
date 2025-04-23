@@ -154,6 +154,8 @@ void* worker(void* args)
                 if (nbytes_socket == -1) {
                     perror("Error when reading the socket\n"); // LOG
                     protostate = ERROR;
+                } else {
+                    protostate = PARSE_BUFF;
                 }
             } else {
                 // There are still other commands to read on the buffer
@@ -162,6 +164,7 @@ void* worker(void* args)
             break;
 
         case PARSE_BUFF:
+            printf("in PARSE_BUFF:\n"); // LOG
             int endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
             if (endcmd_offset == -1) {
                 buff_offset += nbytes_socket;
