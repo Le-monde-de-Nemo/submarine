@@ -134,6 +134,7 @@ void* worker(void* args)
     // FSM - execution of the commands from the "affichage <-> controlleur" protocol
     int protostate = READ_BUFF;
     int exited = FALSE;
+    int endcmd_offset;
 
     while (!exited) {
 
@@ -151,8 +152,8 @@ void* worker(void* args)
             if (ncmds == 0) {
                 nbytes_socket = read(sockfd, buffer + buff_offset, BUFLEN - buff_offset);
                 ncmds = worker__count_cmds(buffer, buff_offset);
-                if (nbytes_socket == -1) {
-                    perror("Error when reading the socket\n"); // LOG
+                if (nbytes_socket <= 0) {
+                    fprintf(stderr, "Error when reading the socket\n"); // LOG
                     protostate = ERROR;
                 } else {
                     protostate = PARSE_BUFF;
@@ -165,7 +166,7 @@ void* worker(void* args)
 
         case PARSE_BUFF:
             printf("in PARSE_BUFF:\n"); // LOG
-            int endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
+            endcmd_offset = worker__find_cmd_in_buffer(buffer, buff_offset);
             if (endcmd_offset == -1) {
                 buff_offset += nbytes_socket;
                 if (buff_offset >= BUFLEN) {

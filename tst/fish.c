@@ -57,6 +57,7 @@ int test_fish__init_fish(void)
         fish__is_started(fish) == 0,
         "fish__is_started(fish) should be False(0)\n");
 
+    fish__destroy_fish(&fish);
     return local_ret;
 }
 
@@ -91,6 +92,7 @@ int test_fish__start_fish(void)
         fish__is_started(fish) == 0,
         "fish__is_started(fish) should be False(0)\n");
 
+    fish__destroy_fish(&fish);
     return local_ret;
 }
 
