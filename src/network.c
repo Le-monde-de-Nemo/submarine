@@ -63,7 +63,7 @@ void network_init(char* host, int portno)
  *
  *  @params args: int file descriptor
  */
-void* worker(void* args)
+void* workernetwork(void* args)
 {
     epollfd = epoll_create1(0);
     if (epollfd == -1) {
