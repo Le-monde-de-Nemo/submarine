@@ -8,6 +8,9 @@
 #include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
+#include "vec2.h"
+#include "vue.h"
+#include "worker.h"
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
 #include <netinet/in.h>
@@ -31,6 +34,14 @@
 
 #ifndef WORKERC
 #define WORKERC 16
+#endif
+
+#ifndef DEFAULT_AQUAW
+#define DEFAULT_AQUAW 1337
+#endif
+
+#ifndef DEFAULT_AQUAH
+#define DEFAULT_AQUAH 1337
 #endif
 
 #define LHOST_WORKER "127.0.0.1"
@@ -63,7 +74,6 @@ struct worker_t {
  *  Thread functions
  */
 void* master(void* args);
-void* worker(void* args);
 
 int main(int argc, char* argv[])
 {
@@ -78,6 +88,17 @@ int main(int argc, char* argv[])
     char buf[4096] = {};
     printf("%s", controller__disp(buf, sizeof(buf), controller));
     printf("---------------\n");
+
+    struct vec2 size = vec2__create(DEFAULT_AQUAW, DEFAULT_AQUAH);
+    struct vue_t n1 = vue__init_vue(1, vec2__zeros(), vec2__create(500, 500));
+    struct vue_t n2 = vue__init_vue(2, vec2__create(500, 500), vec2__create(500, 500));
+    struct vue_t n3 = vue__init_vue(3, vec2__create(0, 500), vec2__create(500, 500));
+    struct vue_t n4 = vue__init_vue(4, vec2__create(500, 0), vec2__create(500, 500));
+    global_aqua = aqua__init_aqua(size);
+    global_aqua = aqua__add_vue(n1, global_aqua);
+    global_aqua = aqua__add_vue(n2, global_aqua);
+    global_aqua = aqua__add_vue(n3, global_aqua);
+    global_aqua = aqua__add_vue(n4, global_aqua);
 
     pthread_t master_thread;
     pthread_create(&master_thread, NULL, master, NULL);
@@ -194,29 +215,29 @@ void* master(void* args)
  * `worker` will write in that file descriptor.
  * :return: nothing.
  */
-void* worker(void* args)
-{
-    if (!args) {
-        return NULL;
-    }
+// void* worker(void* args)
+// {
+//     if (!args) {
+//         return NULL;
+//     }
 
-    char buffer[BUFLEN] = {};
-    // bzero(buffer, BUFLEN);
-    int n;
-    int newsockfd = (int)args;
+//     char buffer[BUFLEN] = {};
+//     // bzero(buffer, BUFLEN);
+//     int n;
+//     int newsockfd = (int)args;
 
-    while (!exited) {
-        n = read(newsockfd, buffer, BUFLEN);
-        if (n < 0)
-            error("ERROR reading from socket");
-        printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
+//     while (!exited) {
+//         n = read(newsockfd, buffer, BUFLEN);
+//         if (n < 0)
+//             error("ERROR reading from socket");
+//         printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
 
-        n = write(newsockfd, "I got your message", 18);
-        if (n < 0)
-            error("ERROR writing to socket");
-    }
+//         n = write(newsockfd, "I got your message", 18);
+//         if (n < 0)
+//             error("ERROR writing to socket");
+//     }
 
-    close(newsockfd);
-    fprintf(stderr, "exited!\n");
-    return NULL;
-}
+//     close(newsockfd);
+//     fprintf(stderr, "exited!\n");
+//     return NULL;
+// }

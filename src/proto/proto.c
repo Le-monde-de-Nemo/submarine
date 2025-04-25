@@ -17,7 +17,8 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
         struct vue_t* vue = aqua__get_vue(id, global_aqua);
         char vuebuf[2048] = {};
         vue__disp(*vue, vuebuf, sizeof(vuebuf));
-        snprintf(dst, n, "greeting N%d %s\n", id, vuebuf);
+        fprintf(stderr, "%s\n", vuebuf);
+        snprintf(dst, n, "greeting %s\n", vuebuf);
     }
 
     return dst;
@@ -25,7 +26,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
 
 char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vec2 origin)
 {
-    char acc[n];
+    char acc[n] = {};
     char fish_buffer[n];
     for (int i = 0; i < n; ++i)
         acc[i] = '\0';
@@ -39,17 +40,18 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
             fish__get_name(fish),
             fish__get_current_pos(fish).x - origin.x,
             fish__get_current_pos(fish).y - origin.x,
-            fish__get_target_pos(fish).x - origin.x,
-            fish__get_target_pos(fish).y - origin.y,
+            fish__get_width_height(fish).x,
+            fish__get_width_height(fish).y,
             fish__get_move_duration(fish));
 
-        if (n_acc + len < n) {
+        if (n_acc + len < n - 1) {
             strcat(acc, fish_buffer);
             n_acc += len;
         }
     }
-
+    strcat(acc, "\n");
     strcpy(dst, acc);
+
     return dst;
 }
 
