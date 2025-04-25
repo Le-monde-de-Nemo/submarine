@@ -3,21 +3,30 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#ifndef BUFLEN
+#define BUFLEN 2048
+#endif
+
 #define MAX_EVENTS 10
+
+extern int exited;
 
 static struct epoll_event ev, events[MAX_EVENTS];
 static int listen_sock, conn_sock, nfds, epollfd;
 static socklen_t cli_socket_len;
 static struct sockaddr_in serv_addr, cli_addr;
 
+void do_use_fd(int fd);
+
 void setnonblocking(int fd)
 {
-    int rc = fcntl(fd, F_SETFL, O_NONBLOCK);
+    int rc = fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 
     if (rc < 0) {
         perror("fcntl() failed");
@@ -28,18 +37,18 @@ void setnonblocking(int fd)
 
 void network_init(char* host, int portno)
 {
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
+    listen_sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    if (listen_sock < 0)
         perror("socket() failed");
 
     // Make the port reusable
     int enabled = 1;
     int rc;
-    rc = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+    rc = setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR,
         (char*)&enabled, sizeof(enabled));
     if (rc < 0) {
         perror("setsockopt() failed");
-        close(sockfd);
+        close(listen_sock);
         exit(-1);
     }
 
@@ -51,11 +60,11 @@ void network_init(char* host, int portno)
 
     serv_addr.sin_port = htons(portno);
 
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    if (bind(listen_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
         perror("bind() failed");
 
-    setnonblocking(sockfd);
-    listen(sockfd, MAX_EVENTS - 1);
+    setnonblocking(listen_sock);
+    listen(listen_sock, 0);
 }
 
 /*
@@ -63,7 +72,7 @@ void network_init(char* host, int portno)
  *
  *  @params args: int file descriptor
  */
-void* worker(void* args)
+void* workerth(void* args)
 {
     epollfd = epoll_create1(0);
     if (epollfd == -1) {
@@ -71,15 +80,15 @@ void* worker(void* args)
         exit(EXIT_FAILURE);
     }
 
-    ev.events = EPOLLIN;
+    ev.events = EPOLLIN | EPOLLONESHOT;
     ev.data.fd = listen_sock;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
         perror("epoll_ctl: listen_sock");
         exit(EXIT_FAILURE);
     }
 
-    for (;;) {
-        nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+    while (!exited) {
+        nfds = epoll_wait(epollfd, events, MAX_EVENTS, 1000);
         if (nfds == -1) {
             perror("epoll_wait");
             exit(EXIT_FAILURE);
@@ -96,23 +105,50 @@ void* worker(void* args)
                 }
 
                 setnonblocking(conn_sock);
-                ev.events = EPOLLIN | EPOLLET;
+                ev.events = EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLONESHOT;
                 ev.data.fd = conn_sock;
 
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock,
                         &ev)
                     == -1) {
-                    perror("epoll_ctl: conn_sock");
+                    perror("epoll_ctl() failed");
                     exit(EXIT_FAILURE);
                 }
+
             }
 
             else {
-                continue;
-                // do_use_fd(events[n].data.fd, state);
+                do_use_fd(events[n].data.fd);
+            }
+
+            if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[n].data.fd, &events[n]) == -1) {
+                perror("epoll_ctl() failed");
+                exit(EXIT_FAILURE);
             }
         }
     }
 
     return NULL;
+}
+
+void network_finalize()
+{
+    close(epollfd);
+    close(listen_sock);
+}
+
+void do_use_fd(int fd)
+{
+    char readbuf[BUFLEN] = {};
+    char writebuf[BUFLEN] = {};
+
+    int n = read(fd, readbuf, BUFLEN);
+    if (n < 0)
+        perror("read() failed");
+
+    strncpy(writebuf, readbuf, BUFLEN);
+
+    n = write(fd, writebuf, strlen(writebuf));
+    if (n < 0)
+        perror("write() failed");
 }
