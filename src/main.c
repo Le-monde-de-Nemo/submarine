@@ -1,5 +1,6 @@
 #include "aqua.h"
 #include "controller.h"
+#include "network.h"
 #include "repl.h"
 #include "repl_add_view.h"
 #include "repl_del_view.h"
@@ -63,7 +64,7 @@ void error(char* msg)
  * Global variables
  */
 
-static int exited = 0;
+int exited = 0;
 static struct controller_t controller;
 
 struct worker_t {
@@ -73,7 +74,6 @@ struct worker_t {
 /*
  *  Thread functions
  */
-void* master(void* args);
 
 int main(int argc, char* argv[])
 {
@@ -100,8 +100,11 @@ int main(int argc, char* argv[])
     global_aqua = aqua__add_vue(n3, global_aqua);
     global_aqua = aqua__add_vue(n4, global_aqua);
 
-    pthread_t master_thread;
-    pthread_create(&master_thread, NULL, master, NULL);
+    network_init(LHOST_WORKER, controller.port);
+
+    pthread_t threads[5];
+    for (int i = 0; i < 5; ++i)
+        pthread_create(&threads[i], NULL, workerth, NULL);
 
     struct repl_entry entries[] = {
         repl_entry_load,
@@ -118,126 +121,11 @@ int main(int argc, char* argv[])
 
     repl__run(repl);
     exited = 1;
-    pthread_join(master_thread, NULL);
+    for (int i = 0; i < 5; ++i)
+        pthread_join(threads[i], NULL);
+    network_finalize();
 
     repl__finalize(repl);
     aqua__destroy_aqua(&global_aqua);
     return 0;
 }
-
-void master__finalize()
-{
-}
-
-void* master(void* args)
-{
-    pthread_t worker_thread;
-
-    socklen_t cli_socket_len;
-    struct sockaddr_in serv_addr, cli_addr;
-
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        error("ERROR opening socket");
-
-    // Make the port reusable
-    int enabled = 1;
-    int rc;
-    rc = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-        (char*)&enabled, sizeof(enabled));
-    if (rc < 0) {
-        perror("setsockopt() failed");
-        close(sockfd);
-        exit(-1);
-    }
-
-    bzero(&serv_addr, sizeof(serv_addr));
-
-    serv_addr.sin_family = AF_INET;
-    // serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    inet_pton(AF_INET, LHOST_WORKER, &serv_addr.sin_addr.s_addr);
-
-    int portno = controller.port;
-    serv_addr.sin_port = htons(portno);
-
-    if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
-        error("ERROR on bind()");
-
-    rc = fcntl(sockfd, F_SETFL, O_NONBLOCK);
-    if (rc < 0) {
-        perror("fcntl() failed");
-        close(sockfd);
-        exit(-1);
-    }
-
-    fds[0].fd = sockfd;
-    fds[0].events = POLLIN;
-
-    long timeout = 1000;
-
-    listen(sockfd, 5);
-
-    /*
-     *  Loop accepting connections
-     */
-    while (!exited) {
-        int rc = poll(fds, nfds, timeout);
-        if (rc <= 0) {
-            // No new connection
-            continue;
-        }
-
-        int workerfd = 0;
-        cli_socket_len = sizeof(cli_addr);
-
-        do {
-            printf("accept\n");
-            workerfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_socket_len);
-
-            if (workerfd < 0) {
-                printf("leave\n");
-                break;
-            }
-
-            pthread_create(&worker_thread, NULL, worker, (void*)(long)workerfd);
-        } while (workerfd != EWOULDBLOCK);
-    }
-
-    // Clean up
-    close(sockfd);
-    fprintf(stderr, "Master exited!\n");
-
-    return NULL;
-}
-
-/*
- * :param args: an integer, it is a file descriptor.
- * `worker` will write in that file descriptor.
- * :return: nothing.
- */
-// void* worker(void* args)
-// {
-//     if (!args) {
-//         return NULL;
-//     }
-
-//     char buffer[BUFLEN] = {};
-//     // bzero(buffer, BUFLEN);
-//     int n;
-//     int newsockfd = (int)args;
-
-//     while (!exited) {
-//         n = read(newsockfd, buffer, BUFLEN);
-//         if (n < 0)
-//             error("ERROR reading from socket");
-//         printf("Here is the message: (size: %d bytes) %s\n", n, buffer);
-
-//         n = write(newsockfd, "I got your message", 18);
-//         if (n < 0)
-//             error("ERROR writing to socket");
-//     }
-
-//     close(newsockfd);
-//     fprintf(stderr, "exited!\n");
-//     return NULL;
-// }
