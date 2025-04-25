@@ -104,9 +104,9 @@ void worker__init_fsm_state(struct worker__fsm_state* state)
     // State:
     state->protostate = READ_BUFF;
     // Vars:
-    memset(state->vars.buffer, 0, sizeof(state->vars.buffer));
-    memset(state->vars.cmd, 0, sizeof(state->vars.cmd));
-    memset(state->vars.words, 0, sizeof(state->vars.words));
+    bzero(state->vars.buffer, sizeof(state->vars.buffer));
+    bzero(state->vars.cmd, sizeof(state->vars.cmd));
+    bzero(state->vars.words, sizeof(state->vars.words));
     state->vars.buff_offset = 0;
     state->vars.nwords = 0;
     state->vars.ncmds = 0;
@@ -119,218 +119,300 @@ void worker__finalize_fsm_state(struct worker__fsm_state* state)
     free(state);
 }
 
-int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
+int worker__clean_vars(struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    memset(state->vars.cmd, 0, sizeof(state->vars.cmd));
+    memset(state->vars.words, 0, sizeof(state->vars.words));
+    state->protostate = READ_BUFF;
+    return halt;
+}
+
+int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
+{
+    printf("in READ_BUFF:\n"); // LOG
+    int halt = FALSE;
+    // Reads from socket only if there are no commands on the buffer
+    if (state->vars.ncmds == 0) {
+        state->vars.nbytes_socket = read(sockfd, state->vars.buffer + state->vars.buff_offset, BUFLEN - state->vars.buff_offset);
+        state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
+        if (state->vars.nbytes_socket <= 0) {
+            fprintf(stderr, "Error when reading the socket\n"); // LOG
+            state->protostate = ERROR;
+        } else {
+            state->protostate = PARSE_BUFF;
+        }
+    } else {
+        // There are still other commands to read on the buffer
+        state->protostate = PARSE_BUFF;
+    }
+    return halt;
+}
+
+int worker__parse_buffer(struct worker__fsm_state* state)
+{
+    printf("in PARSE_BUFF:\n"); // LOG
+    int halt = FALSE;
+    int endcmd_offset = worker__find_cmd_in_buffer(state->vars.buffer, state->vars.buff_offset);
+    if (endcmd_offset == -1) {
+        state->vars.buff_offset += state->vars.nbytes_socket;
+        if (state->vars.buff_offset >= BUFLEN) {
+            printf("Worker buffer overflow\n"); // LOG
+            state->protostate = ERROR;
+        } else {
+            // if the command is incomplete, the worker remains reading the
+            // bytes sent to the socket
+            printf("Incomplete command, going back to reading the socket\n"); // LOG
+            state->protostate = READ_BUFF;
+        }
+
+    } else {
+        memset(state->vars.cmd, 0, BUFLEN);
+        // stores the command (max of BUFLEN bytes)
+        strncpy(state->vars.cmd, state->vars.buffer, endcmd_offset + 1);
+        // saves the content of the buffer located after the command
+        char new_buffer[BUFLEN] = {};
+        strncpy(new_buffer, state->vars.buffer + endcmd_offset + 1, BUFLEN - (endcmd_offset + 1));
+        strncpy(state->vars.buffer, new_buffer, BUFLEN);
+        state->vars.ncmds--; // command consumed from the buffer
+        state->vars.buff_offset = 0; // new command located at the beginning of the buffer
+        state->protostate = PARSE_CMD;
+    }
+    return halt;
+}
+
+int worker__parse_cmd(struct worker__fsm_state* state)
+{
+    printf("in PARSE_CMD:\n"); // LOG
+    int halt = FALSE;
+    state->vars.nwords = worker__parse_words(state->vars.cmd, state->vars.words);
+    printf("\tnwords = %d\n", state->vars.nwords); // LOG
+    state->protostate = worker__get_command_state(state->vars.words[0]);
+    return halt;
+}
+
+int worker__hello(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    int id = -1;
+    int nogreeting = 0;
+    sscanf(state->vars.words[3], "N%d", &id);
+
+    char writebuf[BUFLEN] = {};
+    state->vars.current_vue = aqua__get_vue(id, global_aqua);
+    proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
+
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response of hello\n"); // LOG
+        halt = TRUE;
+    }
+
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__add_fish(int sockfd, struct worker__fsm_state* state)
 {
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
+    if (state->vars.current_vue == NULL) {
+        fprintf(stderr, "%p\n", state->vars.current_vue);
+        state->protostate = CLEAN_VARS;
+        return halt;
+    }
 
+    struct fish_t* fishExists = aqua__get_fish(state->vars.words[1], global_aqua);
+    int already_exists = (fishExists != NULL);
+
+    // PoissonRouge at 90x40,10x4, RandomWayPoint
+    int x_pos = -1, y_pos = -1;
+    int width = -1, height = -1;
+    struct vec2 pos, size;
+    struct fish_t fish2add;
+
+    if (!already_exists) {
+        sscanf(state->vars.words[3], "%dx%d,%dx%d", &x_pos, &y_pos, &width, &height);
+
+        pos = vec2__create(x_pos, y_pos);
+        size = vec2__create(width, height);
+
+        fish2add = fish__init_fish(state->vars.words[1], pos, size, state->vars.words[4]);
+        global_aqua = aqua__add_fish(fish2add, global_aqua);
+    }
+
+    proto__add_fish(writebuf, BUFLEN, already_exists);
+
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response of addFish\n"); // LOG
+        halt = TRUE;
+    }
+
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__del_fish(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    char writebuf[BUFLEN] = {};
+    if (state->vars.current_vue == NULL) {
+        fprintf(stderr, "%p\n", state->vars.current_vue);
+        state->protostate = CLEAN_VARS;
+        return halt;
+    }
+
+    struct fish_t* fish2del = aqua__get_fish(state->vars.words[1], global_aqua);
+    int already_exists = (fish2del != NULL);
+    if (already_exists)
+        global_aqua = aqua__del_fish(state->vars.words[1], global_aqua);
+
+    proto__del_fish(writebuf, BUFLEN, already_exists);
+
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response to delFish\n"); // LOG
+        halt = TRUE;
+    }
+
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__start_fish(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    char writebuf[BUFLEN] = {};
+    if (state->vars.current_vue == NULL) {
+        fprintf(stderr, "%p\n", state->vars.current_vue);
+        state->protostate = CLEAN_VARS;
+        return halt;
+    }
+
+    struct fish_t* fish2start = aqua__get_fish(state->vars.words[1], global_aqua);
+    int already_exists = (fish2start != NULL);
+    if (already_exists)
+        *fish2start = fish__start_fish(*fish2start);
+
+    proto__start_fish(writebuf, BUFLEN, already_exists);
+
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response to startFish\n"); // LOG
+        halt = TRUE;
+    }
+
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    char writebuf[BUFLEN] = {};
+    if (state->vars.current_vue == NULL) {
+        fprintf(stderr, "%p\n", state->vars.current_vue);
+        state->protostate = CLEAN_VARS;
+        return halt;
+    }
+
+    struct fish_t* fishes = aqua__get_fishes(global_aqua);
+    int nb_fishes = aqua__get_nb_fishes(global_aqua);
+
+    struct vec2 origin = vue__get_current_pos(*state->vars.current_vue);
+
+    proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
+
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response to ping\n"); // LOG
+        halt = TRUE;
+    }
+
+    free(fishes);
+
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__ping(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    char writebuf[BUFLEN] = {};
+    char* pingval = state->vars.words[1];
+    proto__ping(writebuf, sizeof(writebuf), pingval);
+    printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
+    if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+        perror("Error in writing the response to ping\n"); // LOG
+        state->protostate = ERROR;
+    }
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__log_out(int sockfd, struct worker__fsm_state* state)
+{
+    printf("in LOGOUT:\n"); // LOG
+    int halt = FALSE;
+    char writebuf[BUFLEN] = {};
+    if (strncmp(state->vars.words[1], "out", BUFLEN) != 0) {
+        fprintf(stderr, "Invalid log out command\n"); // LOG
+        state->protostate = ERROR;
+    } else {
+        proto__log(writebuf, sizeof(writebuf));
+        printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
+        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+            perror("Error in writing the response to log out\n"); // LOG
+            state->protostate = ERROR;
+        }
+        halt = TRUE;
+    }
+    return halt;
+}
+
+int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
     switch (state->protostate) {
 
     case CLEAN_VARS:
-        memset(state->vars.cmd, 0, sizeof(state->vars.cmd));
-        memset(state->vars.words, 0, sizeof(state->vars.words));
-        state->protostate = READ_BUFF;
+        halt = worker__clean_vars(state);
         break;
 
     case READ_BUFF:
-        printf("in READ_BUFF:\n"); // LOG
-        // Reads from socket only if there are no commands on the buffer
-        if (state->vars.ncmds == 0) {
-            state->vars.nbytes_socket = read(sockfd, state->vars.buffer + state->vars.buff_offset, BUFLEN - state->vars.buff_offset);
-            state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
-            if (state->vars.nbytes_socket <= 0) {
-                fprintf(stderr, "Error when reading the socket\n"); // LOG
-                state->protostate = ERROR;
-            } else {
-                state->protostate = PARSE_BUFF;
-            }
-        } else {
-            // There are still other commands to read on the buffer
-            state->protostate = PARSE_BUFF;
-        }
+        halt = worker__read_buffer(sockfd, state);
         break;
 
     case PARSE_BUFF:
-        printf("in PARSE_BUFF:\n"); // LOG
-        int endcmd_offset = worker__find_cmd_in_buffer(state->vars.buffer, state->vars.buff_offset);
-        if (endcmd_offset == -1) {
-            state->vars.buff_offset += state->vars.nbytes_socket;
-            if (state->vars.buff_offset >= BUFLEN) {
-                printf("Worker buffer overflow\n"); // LOG
-                state->protostate = ERROR;
-            } else {
-                // if the command is incomplete, the worker remains reading the
-                // bytes sent to the socket
-                printf("Incomplete command, going back to reading the socket\n"); // LOG
-                state->protostate = READ_BUFF;
-            }
-
-        } else {
-            memset(state->vars.cmd, 0, BUFLEN);
-            // stores the command (max of BUFLEN bytes)
-            strncpy(state->vars.cmd, state->vars.buffer, endcmd_offset + 1);
-            // saves the content of the buffer located after the command
-            char new_buffer[BUFLEN] = {};
-            strncpy(new_buffer, state->vars.buffer + endcmd_offset + 1, BUFLEN - (endcmd_offset + 1));
-            strncpy(state->vars.buffer, new_buffer, BUFLEN);
-            state->vars.ncmds--; // command consumed from the buffer
-            state->vars.buff_offset = 0; // new command located at the beginning of the buffer
-            state->protostate = PARSE_CMD;
-        }
+        halt = worker__parse_buffer(state);
         break;
 
     case PARSE_CMD:
-        printf("in PARSE_CMD:\n"); // LOG
-        state->vars.nwords = worker__parse_words(state->vars.cmd, state->vars.words);
-        printf("\tnwords = %d\n", state->vars.nwords); // LOG
-        state->protostate = worker__get_command_state(state->vars.words[0]);
+        halt = worker__parse_cmd(state);
         break;
 
     case HELLO:
-        int id = -1;
-        int nogreeting = 0;
-        sscanf(state->vars.words[3], "N%d", &id);
-
-        state->vars.current_vue = aqua__get_vue(id, global_aqua);
-        proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
-
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            halt = TRUE;
-        }
-
-        state->protostate = CLEAN_VARS;
+        halt = worker__hello(sockfd, state);
         break;
 
     case ADD_FISH:
-        if (state->vars.current_vue == NULL) {
-            fprintf(stderr, "%p\n", state->vars.current_vue);
-            state->protostate = CLEAN_VARS;
-            break;
-        }
-
-        struct fish_t* fishExists = aqua__get_fish(state->vars.words[1], global_aqua);
-        int already_exists = (fishExists != NULL);
-
-        // PoissonRouge at 90x40,10x4, RandomWayPoint
-        int x_pos = -1, y_pos = -1;
-        int width = -1, height = -1;
-        struct vec2 pos, size;
-        struct fish_t fish2add;
-
-        if (!already_exists) {
-            sscanf(state->vars.words[3], "%dx%d,%dx%d", &x_pos, &y_pos, &width, &height);
-
-            pos = vec2__create(x_pos, y_pos);
-            size = vec2__create(width, height);
-
-            fish2add = fish__init_fish(state->vars.words[1], pos, size, state->vars.words[4]);
-            global_aqua = aqua__add_fish(fish2add, global_aqua);
-        }
-
-        proto__add_fish(writebuf, BUFLEN, already_exists);
-
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            halt = TRUE;
-        }
-
-        state->protostate = CLEAN_VARS;
+        halt = worker__add_fish(sockfd, state);
         break;
 
     case DEL_FISH:
-        if (state->vars.current_vue == NULL) {
-            fprintf(stderr, "%p\n", state->vars.current_vue);
-            state->protostate = CLEAN_VARS;
-            break;
-        }
-
-        struct fish_t* fish2del = aqua__get_fish(state->vars.words[1], global_aqua);
-        already_exists = (fish2del != NULL);
-        if (already_exists)
-            global_aqua = aqua__del_fish(state->vars.words[1], global_aqua);
-
-        proto__del_fish(writebuf, BUFLEN, already_exists);
-
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            halt = TRUE;
-        }
-
-        state->protostate = CLEAN_VARS;
+        halt = worker__del_fish(sockfd, state);
         break;
 
     case START_FISH:
-        if (state->vars.current_vue == NULL) {
-            fprintf(stderr, "%p\n", state->vars.current_vue);
-            state->protostate = CLEAN_VARS;
-            break;
-        }
-
-        struct fish_t* fish2start = aqua__get_fish(state->vars.words[1], global_aqua);
-        already_exists = (fish2start != NULL);
-        if (already_exists)
-            *fish2start = fish__start_fish(*fish2start);
-
-        proto__start_fish(writebuf, BUFLEN, already_exists);
-
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            halt = TRUE;
-        }
-
-        state->protostate = CLEAN_VARS;
+        halt = worker__start_fish(sockfd, state);
         break;
 
     case GET_FISHES:
-        if (state->vars.current_vue == NULL) {
-            fprintf(stderr, "%p\n", state->vars.current_vue);
-            state->protostate = CLEAN_VARS;
-            break;
-        }
-
-        struct fish_t* fishes = aqua__get_fishes(global_aqua);
-        int nb_fishes = aqua__get_nb_fishes(global_aqua);
-
-        struct vec2 origin = vue__get_current_pos(*state->vars.current_vue);
-
-        proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
-
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            halt = TRUE;
-        }
-
-        free(fishes);
-
-        state->protostate = CLEAN_VARS;
+        halt = worker__get_fishes(sockfd, state);
         break;
 
     case PING:
-        char* pingval = state->vars.words[1];
-        proto__ping(writebuf, sizeof(writebuf), pingval);
-        printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to ping\n"); // LOG
-            state->protostate = ERROR;
-        }
-        state->protostate = CLEAN_VARS;
+        halt = worker__ping(sockfd, state);
         break;
 
     case LOGOUT:
-        printf("in LOGOUT:\n"); // LOG
-        if (strncmp(state->vars.words[1], "out", BUFLEN) != 0) {
-            fprintf(stderr, "Invalid log out command\n"); // LOG
-            state->protostate = ERROR;
-        } else {
-            proto__log(writebuf, sizeof(writebuf));
-            printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
-            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-                perror("Error in writing the response to log out\n"); // LOG
-                state->protostate = ERROR;
-            }
-            halt = TRUE;
-        }
+        halt = worker__log_out(sockfd, state);
         break;
 
     // Executed if there was an error with the usage of the protocol,
