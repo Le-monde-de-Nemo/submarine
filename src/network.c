@@ -17,7 +17,7 @@
 #define BUFLEN 2048
 #endif
 
-#define MAX_EVENTS 10
+#define MAX_EVENTS 50
 
 STAILQ_HEAD(events_fifo_t, events_entry_t);
 
@@ -36,7 +36,7 @@ static int listen_sock, conn_sock, nfds, epollfd;
 static socklen_t cli_socket_len;
 static struct sockaddr_in serv_addr, cli_addr;
 
-void do_use_fd(struct events_entry_t* event);
+int do_use_fd(struct events_entry_t* event);
 
 void setnonblocking(int fd)
 {
@@ -56,7 +56,6 @@ void network_init(char* host, int portno)
     STAILQ_INIT(&available_events);
     for (int i = 0; i < MAX_EVENTS; ++i) {
         events_entries[i].state = malloc(sizeof(*events_entries[i].state));
-        fprintf(stderr, "%p\n", events_entries[i].state);
         events_entries[i].event.data.ptr = &events_entries[i];
         STAILQ_INSERT_TAIL(&available_events, &events_entries[i], link);
     }
@@ -172,8 +171,9 @@ void* workerth(void* args)
             } // End client disconnection
 
             else {
-                do_use_fd(event);
-                if (epoll_ctl(epollfd, EPOLL_CTL_MOD, event->fd, &events[n]) == -1) {
+                int rc = do_use_fd(event);
+
+                if (rc || epoll_ctl(epollfd, EPOLL_CTL_MOD, event->fd, &events[n]) == -1) {
                     perror("epoll_ctl() failed");
                     exit(EXIT_FAILURE);
                 }
@@ -188,11 +188,16 @@ void network_finalize()
 {
     close(epollfd);
     close(listen_sock);
+    for (int i = 0; i < MAX_EVENTS; ++i)
+        free(events_entries[i].state);
 }
 
-void do_use_fd(struct events_entry_t* event)
+int do_use_fd(struct events_entry_t* event)
 {
     do {
-        worker__run_fsm_step(event->fd, event->state);
+        if (worker__run_fsm_step(event->fd, event->state))
+            return 1;
     } while (event->state->protostate != READ_BUFF);
+
+    return 0;
 }
