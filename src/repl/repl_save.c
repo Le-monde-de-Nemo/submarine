@@ -1,9 +1,8 @@
 #include "repl_save.h"
 #include "aqua.h"
+#include "store.h"
 #include <stdio.h>
 #include <string.h>
-
-extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_save = {
     .match = repl_save_match,
@@ -22,8 +21,8 @@ enum _repl_cmd repl_save_exec(int argc, char* argv[])
         return ok;
     }
 
-    aqua__save_file(argv[1], global_aqua);
+    aqua__save_file(argv[1], store.global_aqua);
 
-    printf("\t-> Aquarium saved (%d display view)!\n", aqua__get_nb_vues(global_aqua));
+    printf("\t-> Aquarium saved (%d display view)!\n", aqua__get_nb_vues(store.global_aqua));
     return ok;
 }

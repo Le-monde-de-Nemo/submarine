@@ -1,13 +1,12 @@
 #include "repl_load.h"
 #include "aqua.h"
 #include "repl.h"
+#include "store.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #define REPL_LOAD_BUFLEN 2048
-
-extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_load = {
     .match = repl_load_match,
@@ -31,11 +30,11 @@ enum _repl_cmd repl_load_exec(int argc, char* argv[])
         return ok;
     }
 
-    aqua__destroy_aqua(&global_aqua);
+    aqua__destroy_aqua(&store.global_aqua);
 
-    global_aqua = aqua__from_file(argv[1]);
+    store.global_aqua = aqua__from_file(argv[1]);
 
-    printf("\t-> aquarium loaded (%d display view)!\n", aqua__get_nb_vues(global_aqua));
+    printf("\t-> aquarium loaded (%d display view)!\n", aqua__get_nb_vues(store.global_aqua));
 
     return ok;
 }

@@ -1,12 +1,11 @@
 #include "proto.h"
 #include "aqua.h"
 #include "fish.h"
+#include "store.h"
 #include "vec2.h"
 #include "vue.h"
 #include <stdio.h>
 #include <string.h>
-
-extern struct aqua_t global_aqua;
 
 char* proto__greeting(char* dst, long n, int id, int nogreeting)
 {
@@ -14,11 +13,10 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
         snprintf(dst, n, "no greeting\n");
 
     else {
-        struct vue_t* vue = aqua__get_vue(id, global_aqua);
+        struct vue_t* vue = aqua__get_vue(id, store.global_aqua);
         char vuebuf[2048] = {};
         vue__disp(*vue, vuebuf, sizeof(vuebuf));
-        fprintf(stderr, "%s\n", vuebuf);
-        snprintf(dst, n, "greeting %s\n", vuebuf);
+        snprintf(dst, n, "greeting %s", vuebuf);
     }
 
     return dst;

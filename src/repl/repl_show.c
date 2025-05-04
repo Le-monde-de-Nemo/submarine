@@ -1,11 +1,10 @@
 #include "repl_show.h"
 #include "aqua.h"
+#include "store.h"
 #include <stdio.h>
 #include <string.h>
 
 #define REPL_SHOW_BUFLEN 2048
-
-extern struct aqua_t global_aqua;
 
 struct repl_entry repl_entry_show = {
     .match = repl_show_match,
@@ -20,7 +19,7 @@ int repl_show_match(int argc, char* argv[])
 enum _repl_cmd repl_show_exec(int argc, char* argv[])
 {
     char buf[REPL_SHOW_BUFLEN] = {};
-    aqua__disp(global_aqua, buf, REPL_SHOW_BUFLEN);
+    aqua__disp(store.global_aqua, buf, REPL_SHOW_BUFLEN);
     printf("%s\n", buf);
     return ok;
 }
