@@ -9,11 +9,13 @@
 #include "repl_quit.h"
 #include "repl_save.h"
 #include "repl_show.h"
+#include "store.h"
 #include "vec2.h"
 #include "vue.h"
 #include "worker.h"
 #include <arpa/inet.h>
 #include <asm-generic/socket.h>
+#include <bits/pthreadtypes.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <pthread.h>
@@ -47,64 +49,34 @@
 
 #define LHOST_WORKER "127.0.0.1"
 
-extern struct aqua_t global_aqua;
+#ifndef THREAD_POOL_SIZE
+#define THREAD_POOL_SIZE 1
+#endif
 
-static struct pollfd fds[WORKERC];
-// Use poll because they say it's better
-static int nfds = 1; // At the beginning, theres only one fd
+void store__init(void);
+void store__finalize(void);
 
-/* Used by the worker. */
-void error(char* msg)
-{
-    perror(msg);
-    exit(1);
-}
-
-/*
- * Global variables
- */
-
-int exited = 0;
-static struct controller_t controller;
-
-struct worker_t {
-    int socketfd;
-};
-
-/*
- *  Thread functions
- */
+static pthread_t thread_pool[THREAD_POOL_SIZE];
 
 int main(int argc, char* argv[])
 {
+    store__init();
     if (argc < 2)
-        controller = controller__default();
+        store.controller = controller__default();
 
     else
-        controller = controller__load_conf(argv[1]);
+        store.controller = controller__load_conf(argv[1]);
 
     printf("Controller config :\n");
     printf("\n---------------\n");
     char buf[4096] = {};
-    printf("%s", controller__disp(buf, sizeof(buf), controller));
+    printf("%s", controller__disp(buf, sizeof(buf), store.controller));
     printf("---------------\n");
 
-    struct vec2 size = vec2__create(DEFAULT_AQUAW, DEFAULT_AQUAH);
-    struct vue_t n1 = vue__init_vue(1, vec2__zeros(), vec2__create(500, 500));
-    struct vue_t n2 = vue__init_vue(2, vec2__create(500, 500), vec2__create(500, 500));
-    struct vue_t n3 = vue__init_vue(3, vec2__create(0, 500), vec2__create(500, 500));
-    struct vue_t n4 = vue__init_vue(4, vec2__create(500, 0), vec2__create(500, 500));
-    global_aqua = aqua__init_aqua(size);
-    global_aqua = aqua__add_vue(n1, global_aqua);
-    global_aqua = aqua__add_vue(n2, global_aqua);
-    global_aqua = aqua__add_vue(n3, global_aqua);
-    global_aqua = aqua__add_vue(n4, global_aqua);
+    network_init(LHOST_WORKER, store.controller.port);
 
-    network_init(LHOST_WORKER, controller.port);
-
-    pthread_t threads[5];
-    for (int i = 0; i < 5; ++i)
-        pthread_create(&threads[i], NULL, workerth, NULL);
+    for (int i = 0; i < THREAD_POOL_SIZE; ++i)
+        pthread_create(&thread_pool[i], NULL, workerth, NULL);
 
     struct repl_entry entries[] = {
         repl_entry_load,
@@ -120,12 +92,35 @@ int main(int argc, char* argv[])
     struct repl repl = repl__create(entries, n);
 
     repl__run(repl);
-    exited = 1;
-    for (int i = 0; i < 5; ++i)
-        pthread_join(threads[i], NULL);
-    network_finalize();
+    store.exited = 1;
 
+    for (int i = 0; i < THREAD_POOL_SIZE; ++i)
+        pthread_join(thread_pool[i], NULL);
+
+    network_finalize();
     repl__finalize(repl);
-    aqua__destroy_aqua(&global_aqua);
+    store__finalize();
     return 0;
+}
+
+void store__init(void)
+{
+    store.exited = 0;
+
+    /* Init store.global_aqua */
+    struct vec2 size = vec2__create(DEFAULT_AQUAW, DEFAULT_AQUAH);
+    struct vue_t n1 = vue__init_vue(1, vec2__zeros(), vec2__create(500, 500));
+    struct vue_t n2 = vue__init_vue(2, vec2__create(500, 500), vec2__create(500, 500));
+    struct vue_t n3 = vue__init_vue(3, vec2__create(0, 500), vec2__create(500, 500));
+    struct vue_t n4 = vue__init_vue(4, vec2__create(500, 0), vec2__create(500, 500));
+    store.global_aqua = aqua__init_aqua(size);
+    store.global_aqua = aqua__add_vue(n1, store.global_aqua);
+    store.global_aqua = aqua__add_vue(n2, store.global_aqua);
+    store.global_aqua = aqua__add_vue(n3, store.global_aqua);
+    store.global_aqua = aqua__add_vue(n4, store.global_aqua);
+}
+
+void store__finalize(void)
+{
+    aqua__destroy_aqua(&store.global_aqua);
 }

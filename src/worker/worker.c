@@ -2,6 +2,7 @@
 #include "aqua.h"
 #include "fish.h"
 #include "proto.h"
+#include "store.h"
 #include "vec2.h"
 #include "vue.h"
 #include <stdio.h>
@@ -10,7 +11,10 @@
 #include <strings.h>
 #include <unistd.h>
 
-extern struct aqua_t global_aqua;
+#define BUFLEN 4096
+#define COMMWORDS 64
+#define TRUE 1
+#define FALSE 0
 
 int worker__count_cmds(char* buffer, int buff_offset)
 {
@@ -136,6 +140,7 @@ int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
     if (state->vars.ncmds == 0) {
         state->vars.nbytes_socket = read(sockfd, state->vars.buffer + state->vars.buff_offset, BUFLEN - state->vars.buff_offset);
         state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
+
         if (state->vars.nbytes_socket <= 0) {
             fprintf(stderr, "Error when reading the socket\n"); // LOG
             state->protostate = ERROR;
@@ -199,7 +204,7 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
     sscanf(state->vars.words[3], "N%d", &id);
 
     char writebuf[BUFLEN] = {};
-    state->vars.current_vue = aqua__get_vue(id, global_aqua);
+    state->vars.current_vue = aqua__get_vue(id, store.global_aqua);
     proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
@@ -221,7 +226,7 @@ int worker__add_fish(int sockfd, struct worker__fsm_state* state)
         return halt;
     }
 
-    struct fish_t* fishExists = aqua__get_fish(state->vars.words[1], global_aqua);
+    struct fish_t* fishExists = aqua__get_fish(state->vars.words[1], store.global_aqua);
     int already_exists = (fishExists != NULL);
 
     // PoissonRouge at 90x40,10x4, RandomWayPoint
@@ -237,7 +242,7 @@ int worker__add_fish(int sockfd, struct worker__fsm_state* state)
         size = vec2__create(width, height);
 
         fish2add = fish__init_fish(state->vars.words[1], pos, size, state->vars.words[4]);
-        global_aqua = aqua__add_fish(fish2add, global_aqua);
+        store.global_aqua = aqua__add_fish(fish2add, store.global_aqua);
     }
 
     proto__add_fish(writebuf, BUFLEN, already_exists);
@@ -261,10 +266,10 @@ int worker__del_fish(int sockfd, struct worker__fsm_state* state)
         return halt;
     }
 
-    struct fish_t* fish2del = aqua__get_fish(state->vars.words[1], global_aqua);
+    struct fish_t* fish2del = aqua__get_fish(state->vars.words[1], store.global_aqua);
     int already_exists = (fish2del != NULL);
     if (already_exists)
-        global_aqua = aqua__del_fish(state->vars.words[1], global_aqua);
+        store.global_aqua = aqua__del_fish(state->vars.words[1], store.global_aqua);
 
     proto__del_fish(writebuf, BUFLEN, already_exists);
 
@@ -287,7 +292,7 @@ int worker__start_fish(int sockfd, struct worker__fsm_state* state)
         return halt;
     }
 
-    struct fish_t* fish2start = aqua__get_fish(state->vars.words[1], global_aqua);
+    struct fish_t* fish2start = aqua__get_fish(state->vars.words[1], store.global_aqua);
     int already_exists = (fish2start != NULL);
     if (already_exists)
         *fish2start = fish__start_fish(*fish2start);
@@ -313,8 +318,8 @@ int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
         return halt;
     }
 
-    struct fish_t* fishes = aqua__get_fishes(global_aqua);
-    int nb_fishes = aqua__get_nb_fishes(global_aqua);
+    struct fish_t* fishes = aqua__get_fishes(store.global_aqua);
+    int nb_fishes = aqua__get_nb_fishes(store.global_aqua);
 
     struct vec2 origin = vue__get_current_pos(*state->vars.current_vue);
 
@@ -369,8 +374,8 @@ int worker__log_out(int sockfd, struct worker__fsm_state* state)
 int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
 {
     int halt = FALSE;
+    fprintf(stderr, "%d\n", state->protostate);
     switch (state->protostate) {
-
     case CLEAN_VARS:
         halt = worker__clean_vars(state);
         break;

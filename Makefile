@@ -15,7 +15,7 @@ tst_mains+=${tst_dir}/mobility.c
 # You shouldn't need to edit what's next
 build_tst_targets=$(patsubst ${tst_dir}/%.c,${build_dir}/%,${tst_mains})
 
-src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/)))
+src_dirs=$(sort $(dir $(wildcard ${src_dir}/**/))) src
 includes=$(patsubst %,-I%,${src_dirs})
 CFLAGS+=-Wall -g -O0 ${includes}
 LDFLAGS+=-fsanitize=address
