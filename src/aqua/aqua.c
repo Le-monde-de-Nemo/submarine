@@ -20,6 +20,7 @@
 #include <sys/queue.h>
 
 #include "aqua.h"
+#include "debug.h"
 #include "figure.h"
 #include "fish.h"
 #include "vec2.h"
@@ -178,7 +179,7 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
     struct aqua__entry_fish_t* n2 = malloc(sizeof(struct aqua__entry_fish_t));
     n2->data = (struct fish_t*)malloc(sizeof(struct fish_t));
     if (!(n2->data)) {
-        fprintf(stderr, "Impossible to alloc the fish.\n");
+        TRACE("Impossible to alloc the fish.");
         exit(EXIT_FAILURE);
     }
     memcpy(n2->data, &fish, sizeof(struct fish_t));
@@ -257,7 +258,7 @@ aqua__get_fishes(const struct aqua_t aqua)
         array
         = (struct fish_t*)malloc(aqua.nb_fishes * sizeof(struct fish_t));
     if (!array) {
-        fprintf(stderr, "Impossible to alloc the array.\n");
+        TRACE("Impossible to alloc the array.");
         exit(EXIT_FAILURE);
     }
 
@@ -294,7 +295,7 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
     n1->data = (struct vue_t*)malloc(sizeof(struct vue_t));
     if (!(n1->data)) {
-        fprintf(stderr, "Impossible to alloc the vue.\n");
+        TRACE("Impossible to alloc the vue.");
         exit(EXIT_FAILURE);
     }
     memcpy(n1->data, &vue, sizeof(struct vue_t));
@@ -369,7 +370,7 @@ aqua__get_vues(const struct aqua_t aqua)
         array
         = (struct vue_t*)malloc(aqua.nb_vues * sizeof(struct vue_t));
     if (!array) {
-        fprintf(stderr, "Impossible to alloc the array.\n");
+        TRACE("Impossible to alloc the array.");
         exit(EXIT_FAILURE);
     }
 
@@ -431,7 +432,7 @@ struct aqua_t aqua__from_file(char* pathname)
 
     // Read the dimensions of the aquarium, this is the only required line
     if (fgets(read_buf, VIEW_CONF_BUF_SIZE, file) == NULL) {
-        fprintf(stderr, "Failed to parse view from file %s\n", pathname);
+        TRACE("Failed to parse view from file %s", pathname);
         exit(1);
     }
 

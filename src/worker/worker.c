@@ -1,5 +1,6 @@
 #include "worker.h"
 #include "aqua.h"
+#include "debug.h"
 #include "fish.h"
 #include "proto.h"
 #include "store.h"
@@ -134,7 +135,7 @@ int worker__clean_vars(struct worker__fsm_state* state)
 
 int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
 {
-    printf("in READ_BUFF:\n"); // LOG
+    TRACE("in READ_BUFF:"); // LOG
     int halt = FALSE;
     // Reads from socket only if there are no commands on the buffer
     if (state->vars.ncmds == 0) {
@@ -142,7 +143,7 @@ int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
         state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
 
         if (state->vars.nbytes_socket <= 0) {
-            fprintf(stderr, "Error when reading the socket\n"); // LOG
+            TRACE("Error when reading the socket"); // LOG
             state->protostate = ERROR;
         } else {
             state->protostate = PARSE_BUFF;
@@ -156,18 +157,18 @@ int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
 
 int worker__parse_buffer(struct worker__fsm_state* state)
 {
-    printf("in PARSE_BUFF:\n"); // LOG
+    TRACE("in PARSE_BUFF:"); // LOG
     int halt = FALSE;
     int endcmd_offset = worker__find_cmd_in_buffer(state->vars.buffer, state->vars.buff_offset);
     if (endcmd_offset == -1) {
         state->vars.buff_offset += state->vars.nbytes_socket;
         if (state->vars.buff_offset >= BUFLEN) {
-            printf("Worker buffer overflow\n"); // LOG
+            TRACE("Worker buffer overflow"); // LOG
             state->protostate = ERROR;
         } else {
             // if the command is incomplete, the worker remains reading the
             // bytes sent to the socket
-            printf("Incomplete command, going back to reading the socket\n"); // LOG
+            TRACE("Incomplete command, going back to reading the socket"); // LOG
             state->protostate = READ_BUFF;
         }
 
@@ -188,10 +189,10 @@ int worker__parse_buffer(struct worker__fsm_state* state)
 
 int worker__parse_cmd(struct worker__fsm_state* state)
 {
-    printf("in PARSE_CMD:\n"); // LOG
+    TRACE("in PARSE_CMD:"); // LOG
     int halt = FALSE;
     state->vars.nwords = worker__parse_words(state->vars.cmd, state->vars.words);
-    printf("\tnwords = %d\n", state->vars.nwords); // LOG
+    TRACE("\tnwords = %d", state->vars.nwords); // LOG
     state->protostate = worker__get_command_state(state->vars.words[0]);
     return halt;
 }
@@ -208,7 +209,7 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
     proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response of hello\n"); // LOG
+        perror("Error in writing the response of hello"); // LOG
         halt = TRUE;
     }
 
@@ -221,7 +222,7 @@ int worker__add_fish(int sockfd, struct worker__fsm_state* state)
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
     if (state->vars.current_vue == NULL) {
-        fprintf(stderr, "%p\n", state->vars.current_vue);
+        TRACE("%p", state->vars.current_vue);
         state->protostate = CLEAN_VARS;
         return halt;
     }
@@ -248,7 +249,7 @@ int worker__add_fish(int sockfd, struct worker__fsm_state* state)
     proto__add_fish(writebuf, BUFLEN, already_exists);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response of addFish\n"); // LOG
+        perror("Error in writing the response of addFish"); // LOG
         halt = TRUE;
     }
 
@@ -261,7 +262,7 @@ int worker__del_fish(int sockfd, struct worker__fsm_state* state)
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
     if (state->vars.current_vue == NULL) {
-        fprintf(stderr, "%p\n", state->vars.current_vue);
+        TRACE("%p", state->vars.current_vue);
         state->protostate = CLEAN_VARS;
         return halt;
     }
@@ -274,7 +275,7 @@ int worker__del_fish(int sockfd, struct worker__fsm_state* state)
     proto__del_fish(writebuf, BUFLEN, already_exists);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response to delFish\n"); // LOG
+        perror("Error in writing the response to delFish"); // LOG
         halt = TRUE;
     }
 
@@ -287,7 +288,7 @@ int worker__start_fish(int sockfd, struct worker__fsm_state* state)
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
     if (state->vars.current_vue == NULL) {
-        fprintf(stderr, "%p\n", state->vars.current_vue);
+        TRACE("%p", state->vars.current_vue);
         state->protostate = CLEAN_VARS;
         return halt;
     }
@@ -300,7 +301,7 @@ int worker__start_fish(int sockfd, struct worker__fsm_state* state)
     proto__start_fish(writebuf, BUFLEN, already_exists);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response to startFish\n"); // LOG
+        perror("Error in writing the response to startFish"); // LOG
         halt = TRUE;
     }
 
@@ -313,7 +314,7 @@ int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
     if (state->vars.current_vue == NULL) {
-        fprintf(stderr, "%p\n", state->vars.current_vue);
+        TRACE("%p", state->vars.current_vue);
         state->protostate = CLEAN_VARS;
         return halt;
     }
@@ -326,7 +327,7 @@ int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
     proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response to ping\n"); // LOG
+        perror("Error in writing the response to ping"); // LOG
         halt = TRUE;
     }
 
@@ -342,9 +343,9 @@ int worker__ping(int sockfd, struct worker__fsm_state* state)
     char writebuf[BUFLEN] = {};
     char* pingval = state->vars.words[1];
     proto__ping(writebuf, sizeof(writebuf), pingval);
-    printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
+    TRACE("\twrite %s in socket %d", writebuf, sockfd); // LOG
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response to ping\n"); // LOG
+        perror("Error in writing the response to ping"); // LOG
         state->protostate = ERROR;
     }
     state->protostate = CLEAN_VARS;
@@ -353,17 +354,17 @@ int worker__ping(int sockfd, struct worker__fsm_state* state)
 
 int worker__log_out(int sockfd, struct worker__fsm_state* state)
 {
-    printf("in LOGOUT:\n"); // LOG
+    TRACE("in LOGOUT:"); // LOG
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
     if (strncmp(state->vars.words[1], "out", BUFLEN) != 0) {
-        fprintf(stderr, "Invalid log out command\n"); // LOG
+        TRACE("Invalid log out command"); // LOG
         state->protostate = ERROR;
     } else {
         proto__log(writebuf, sizeof(writebuf));
-        printf("\twrite %s in socket %d\n", writebuf, sockfd); // LOG
+        TRACE("\twrite %s in socket %d", writebuf, sockfd); // LOG
         if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response to log out\n"); // LOG
+            perror("Error in writing the response to log out"); // LOG
             state->protostate = ERROR;
         }
         halt = TRUE;
@@ -374,7 +375,7 @@ int worker__log_out(int sockfd, struct worker__fsm_state* state)
 int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
 {
     int halt = FALSE;
-    fprintf(stderr, "%d\n", state->protostate);
+    TRACE("%d", state->protostate);
     switch (state->protostate) {
     case CLEAN_VARS:
         halt = worker__clean_vars(state);
@@ -428,7 +429,7 @@ int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
         break;
 
     default:
-        fprintf(stderr, "Invalid FSM protocol state\n"); // LOG
+        TRACE("Invalid FSM protocol state"); // LOG
         halt = TRUE;
     }
 
@@ -442,7 +443,7 @@ int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
  */
 void* worker(void* args)
 {
-    printf("Starting worker thread...\n"); // LOG
+    TRACE("Starting worker thread..."); // LOG
 
     int sockfd = (int)(long)args;
     struct worker__fsm_state* state = worker__new_fsm_state();
@@ -456,6 +457,6 @@ void* worker(void* args)
     close(sockfd);
     worker__finalize_fsm_state(state);
 
-    printf("Exiting worker thread...\n"); // LOG
+    TRACE("Exiting worker thread..."); // LOG
     return NULL;
 }

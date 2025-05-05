@@ -32,34 +32,38 @@ tst_objs+=$(patsubst %.c,${build_dir}/%.o,${_tsts})
 src_headers+=$(wildcard ${src_dir}/*.h ${src_dir}/**/*.h)
 tst_headers+=$(wildcard ${tst_dir}/*.h ${tst_dir}/**/*.h)
 
-.PHONY: all
+PHONY += all
 all: build
 
-.PHONY: build
+PHONY += build
 build: controller
 
 controller: ${src_objs} ${src_dir}/main.c
 	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
+PHONY += debug
+debug:
+	CFLAGS=-DUSE_DEBUG $(MAKE) build
+
 ${build_dir}/%.o: %.c
 	@mkdir -p $(dir $@)
 	${CC} -c -o $@ $^ ${CFLAGS}
 
-.PHONY: test
+PHONY += test
 test: build_test
 	($(patsubst %,% &,${build_tst_targets}) wait) # | sort
 
-.PHONY:
+PHONY += build_test
 build_test: ${build_tst_targets}
 
 ${build_tst_targets}: ${build_dir}/%: ${tst_dir}/%.c ${src_objs} ${tst_objs}
 	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
 
-.PHONY: compile_flags.txt
+PHONY += compile_flags.txt
 compile_flags.txt:
 	(echo "${CFLAGS} ${LDFLAGS}" | sed 's/ /\n/g') > compile_flags.txt
 
-.PHONY: format
+PHONY += format
 format:
 	clang-format -i ${_srcs} ${_tsts} ${tst_mains} ${src_mains} ${src_headers} ${tst_headers}
 
@@ -67,6 +71,8 @@ format:
 check_format:
 	@clang-format --dry-run --Werror ${_srcs} ${_tsts} ${tst_mains} ${src_mains} ${src_headers} ${tst_headers}
 
-.PHONY: clean
+PHONY += clean
 clean:
 	${RM} -rf build controller
+
+.PHONY: $(PHONY)

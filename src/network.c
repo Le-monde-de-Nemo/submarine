@@ -6,7 +6,6 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <strings.h>
 #include <sys/epoll.h>
 #include <sys/queue.h>
@@ -131,7 +130,6 @@ void* workerth(void* args)
             if (event->fd == listen_sock) {
                 conn_sock = accept(listen_sock,
                     (struct sockaddr*)&cli_addr, &cli_socket_len);
-                fprintf(stderr, "%d\n", conn_sock);
 
                 if (conn_sock == -1) {
                     perror("accept() failed");
