@@ -172,8 +172,10 @@ void* workerth(void* args)
                 int rc = do_use_fd(event);
 
                 if (rc || epoll_ctl(epollfd, EPOLL_CTL_MOD, event->fd, &events[n]) == -1) {
-                    perror("epoll_ctl() failed");
-                    exit(EXIT_FAILURE);
+                    // Connection lost
+                    pthread_mutex_lock(&available_events_mutex);
+                    STAILQ_INSERT_TAIL(&available_events, event, link);
+                    pthread_mutex_unlock(&available_events_mutex);
                 }
             } // End client read/write
         }

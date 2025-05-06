@@ -357,6 +357,7 @@ int worker__log_out(int sockfd, struct worker__fsm_state* state)
     TRACE("in LOGOUT:"); // LOG
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
+
     if (strncmp(state->vars.words[1], "out", BUFLEN) != 0) {
         TRACE("Invalid log out command"); // LOG
         state->protostate = ERROR;
@@ -369,6 +370,9 @@ int worker__log_out(int sockfd, struct worker__fsm_state* state)
         }
         halt = TRUE;
     }
+
+    close(sockfd);
+
     return halt;
 }
 
