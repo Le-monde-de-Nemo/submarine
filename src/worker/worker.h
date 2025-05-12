@@ -19,6 +19,8 @@ enum PROTOSTATES {
     PING,
     HELLO, /* hello */
     GET_FISHES, /* getFishes */
+    GET_FISHES_CONTINUOUSLY, /* getFishesContinuously */
+    LS,  /* ls */
     ADD_FISH, /* addFish */
     DEL_FISH, /* delFish */
     START_FISH, /* startFish */

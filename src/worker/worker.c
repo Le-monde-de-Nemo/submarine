@@ -84,6 +84,10 @@ enum PROTOSTATES worker__get_command_state(char* command)
         retval = HELLO;
     } else if (strncmp(command, "getFishes", BUFLEN) == 0) {
         retval = GET_FISHES;
+    } else if (strncmp(command, "getFishesContinuously", BUFLEN) == 0) {
+        retval = GET_FISHES_CONTINUOUSLY;
+    } else if (strncmp(command, "ls", BUFLEN) == 0) {
+        retval = LS;
     } else if (strncmp(command, "addFish", BUFLEN) == 0) {
         retval = ADD_FISH;
     } else if (strncmp(command, "delFish", BUFLEN) == 0) {
@@ -143,7 +147,7 @@ int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
         state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
 
         if (state->vars.nbytes_socket <= 0) {
-            TRACE("Error when reading the socket"); // LOG
+            TRACE("Error when reading the socket (or connection closed)"); // LOG
             state->protostate = ERROR;
         } else {
             state->protostate = PARSE_BUFF;
@@ -202,10 +206,55 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
     int halt = FALSE;
     int id = -1;
     int nogreeting = 0;
-    sscanf(state->vars.words[3], "N%d", &id);
-
     char writebuf[BUFLEN] = {};
+
+    switch(state->vars.nwords) {
+    case 1:  // gets the first available vue id
+        if(store.global_aqua.list_vues.slh_first != NULL) {
+            id = store.global_aqua.list_vues.slh_first->data->fig.id;
+        } else {
+            TRACE("Empty vue, returning nothing in hello");
+            nogreeting = 1;
+            proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response of hello"); // LOG
+                halt = TRUE;
+            }
+            state->protostate = CLEAN_VARS;
+            return halt;
+        }
+    break;
+    case 4:  // hello in as [id]
+        sscanf(state->vars.words[3], "N%d", &id);
+    break;
+    default:
+        TRACE("Invalid call to hello");
+        strncpy(writebuf, "usage: hello [in as N$ID]\n", BUFLEN);
+        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+            perror("Error in writing the response of hello"); // LOG
+            halt = TRUE;
+        }
+        state->protostate = CLEAN_VARS;
+        return halt;
+    break;
+    }
+
     state->vars.current_vue = aqua__get_vue(id, store.global_aqua);
+    if(state->vars.current_vue == NULL) {
+        if(store.global_aqua.list_vues.slh_first != NULL) {
+            id = store.global_aqua.list_vues.slh_first->data->fig.id;
+        } else {
+            TRACE("Empty vue, returning nothing in hello");
+            nogreeting = 1;
+            proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
+            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
+                perror("Error in writing the response of hello"); // LOG
+                halt = TRUE;
+            }
+            state->protostate = CLEAN_VARS;
+            return halt;
+        }
+    }
     proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
@@ -309,7 +358,7 @@ int worker__start_fish(int sockfd, struct worker__fsm_state* state)
     return halt;
 }
 
-int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
+int get_fishes(int sockfd, struct worker__fsm_state* state)
 {
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
@@ -327,11 +376,37 @@ int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
     proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-        perror("Error in writing the response to ping"); // LOG
+        perror("Error in writing the response to getFishes"); // LOG
         halt = TRUE;
     }
 
     free(fishes);
+    return halt;
+}
+
+int worker__get_fishes(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = get_fishes(sockfd, state);
+    state->protostate = CLEAN_VARS;
+    return halt;
+}
+
+int worker__get_fishes_continuously(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = get_fishes(sockfd, state);
+    sleep(3);
+    state->protostate = GET_FISHES_CONTINUOUSLY;
+    return halt;
+}
+
+// Currently, the ls command works only with a given number of steps
+int worker__ls(int sockfd, struct worker__fsm_state* state)
+{
+    int halt = FALSE;
+    for(int i = 0; i < atoi(state->vars.words[1]); i++) {
+        halt = get_fishes(sockfd, state);
+        if(halt) break;
+    }
 
     state->protostate = CLEAN_VARS;
     return halt;
@@ -415,6 +490,14 @@ int worker__run_fsm_step(int sockfd, struct worker__fsm_state* state)
 
     case GET_FISHES:
         halt = worker__get_fishes(sockfd, state);
+        break;
+
+    case GET_FISHES_CONTINUOUSLY:
+        halt = worker__get_fishes_continuously(sockfd, state);
+        break;
+
+    case LS:
+        halt = worker__ls(sockfd, state);
         break;
 
     case PING:
