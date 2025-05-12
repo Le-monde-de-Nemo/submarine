@@ -105,8 +105,8 @@ struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 {
     srand(mobility_get_timestamp());
     struct vec2 to_return = vec2__zeros();
-    to_return.x = rand() % 100;
-    to_return.y = rand() % 100;
+    to_return.x = -100 + rand() % 200;
+    to_return.y = -100 + rand() % 200;
 
     return to_return;
 }
