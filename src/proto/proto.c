@@ -1,5 +1,6 @@
 #include "proto.h"
 #include "aqua.h"
+#include "debug.h"
 #include "fish.h"
 #include "store.h"
 #include "vec2.h"
@@ -14,6 +15,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
 
     else {
         struct vue_t* vue = aqua__get_vue(id, store.global_aqua);
+        DBG("%p", vue);
         char vuebuf[2048] = {};
         vue__disp(*vue, vuebuf, sizeof(vuebuf));
         snprintf(dst, n, "greeting %s", vuebuf);

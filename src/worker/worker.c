@@ -203,58 +203,33 @@ int worker__parse_cmd(struct worker__fsm_state* state)
 
 int worker__hello(int sockfd, struct worker__fsm_state* state)
 {
+    if (state->vars.current_vue != NULL)
+        aqua__add_available_vue(state->vars.current_vue, &store.global_aqua);
+
     int halt = FALSE;
     int id = -1;
     int nogreeting = 0;
     char writebuf[BUFLEN] = {};
+    state->vars.current_vue = NULL;
 
-    switch (state->vars.nwords) {
-    case 1: // gets the first available vue id
-        if (store.global_aqua.list_vues.slh_first != NULL) {
-            id = store.global_aqua.list_vues.slh_first->data->fig.id;
-        } else {
-            TRACE("Empty vue, returning nothing in hello");
-            nogreeting = 1;
-            proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
-            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-                perror("Error in writing the response of hello"); // LOG
-                halt = TRUE;
-            }
-            state->protostate = CLEAN_VARS;
-            return halt;
-        }
-        break;
-    case 4: // hello in as [id]
+    DBG("nwords = %d", state->vars.nwords);
+    if (state->vars.nwords >= 4)
         sscanf(state->vars.words[3], "N%d", &id);
-        break;
-    default:
-        TRACE("Invalid call to hello");
-        strncpy(writebuf, "usage: hello [in as N$ID]\n", BUFLEN);
-        if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-            perror("Error in writing the response of hello"); // LOG
-            halt = TRUE;
-        }
-        state->protostate = CLEAN_VARS;
-        return halt;
-        break;
-    }
 
-    state->vars.current_vue = aqua__get_vue(id, store.global_aqua);
-    if (state->vars.current_vue == NULL) {
-        if (store.global_aqua.list_vues.slh_first != NULL) {
-            id = store.global_aqua.list_vues.slh_first->data->fig.id;
-        } else {
-            TRACE("Empty vue, returning nothing in hello");
-            nogreeting = 1;
-            proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
-            if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
-                perror("Error in writing the response of hello"); // LOG
-                halt = TRUE;
-            }
-            state->protostate = CLEAN_VARS;
-            return halt;
-        }
-    }
+    DBG("id = %d", id);
+
+    if (id != -1)
+        state->vars.current_vue = aqua__get_available_vue(id, &store.global_aqua);
+
+    if (state->vars.current_vue == NULL)
+        state->vars.current_vue = aqua__get_first_available_vue(&store.global_aqua);
+
+    nogreeting = (state->vars.current_vue == NULL);
+    if (state->vars.current_vue != NULL)
+        id = vue__get_id(*state->vars.current_vue);
+
+    DBG("%d %p", id, state->vars.current_vue);
+
     proto__greeting(writebuf, sizeof(writebuf), id, nogreeting);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {

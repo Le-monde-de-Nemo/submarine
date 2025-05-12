@@ -32,6 +32,13 @@ struct aqua__entry_vue_t {
 };
 SLIST_HEAD(slisthead_vue, aqua__entry_vue_t);
 
+struct aqua__available_vue_t {
+    struct vue_t* data;
+    TAILQ_ENTRY(aqua__available_vue_t)
+    entries;
+};
+TAILQ_HEAD(tailqhead_vue, aqua__available_vue_t);
+
 /* It could be a good idea to put this struct in `src/fish/fish.c`.
  * However, we want to allocate the fishes on the stack.
  * If we put the struct in `src/fish/fish.c` we will need to use malloc.
@@ -41,6 +48,7 @@ struct aqua_t {
                          // See `src/figure/figure.h`
 
     struct slisthead_vue list_vues;
+    struct tailqhead_vue* available_vues;
     int nb_vues;
     struct slisthead_fish list_fishes;
     int nb_fishes;
@@ -143,6 +151,14 @@ aqua__get_vue(int id_vue, const struct aqua_t aqua);
  */
 struct vue_t*
 aqua__get_vues(const struct aqua_t aqua);
+
+struct vue_t*
+aqua__get_available_vue(int id_vue, struct aqua_t* aqua);
+
+struct vue_t*
+aqua__get_first_available_vue(struct aqua_t* aqua);
+
+void aqua__add_available_vue(struct vue_t* vue, struct aqua_t* aqua);
 
 int aqua__get_nb_vues(const struct aqua_t aqua);
 

@@ -1,3 +1,5 @@
+#include "aqua.h"
+#include "debug.h"
 #include "store.h"
 #include "worker.h"
 #include <arpa/inet.h>
@@ -162,6 +164,8 @@ void* workerth(void* args)
 
             else if (events[n].events & (EPOLLHUP | EPOLLRDHUP)) {
                 epoll_ctl(epollfd, EPOLL_CTL_DEL, event->fd, &events[n]);
+
+                aqua__add_available_vue(event->state->vars.current_vue, &store.global_aqua);
 
                 pthread_mutex_lock(&available_events_mutex);
                 STAILQ_INSERT_TAIL(&available_events, event, link);

@@ -1,5 +1,6 @@
 #include "aqua.h"
 #include "controller.h"
+#include "debug.h"
 #include "network.h"
 #include "repl.h"
 #include "repl_add_view.h"
@@ -23,6 +24,7 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <sys/poll.h>
+#include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>

@@ -40,17 +40,17 @@
 // --------------------------------------------------------------------------
 
 struct aqua__entry_vue_t*
-aqua__find_list_elt_vue(int id_vue, const struct aqua_t aqua)
+aqua__find_list_elt_vue(int id_vue, struct aqua_t aqua)
 {
     struct aqua__entry_vue_t* np;
     struct slisthead_vue head_vue = aqua.list_vues;
 
+    DBG("FIND FIND");
     SLIST_FOREACH(np, &head_vue, entries)
     {
-
-        if (vue__get_id(*(np->data)) == id_vue) {
+        DBG("FIND %p", np);
+        if (vue__get_id(*(np->data)) == id_vue)
             return np;
-        }
     }
 
     return NULL;
@@ -79,11 +79,13 @@ struct aqua_t aqua__init_aqua(struct vec2 size)
     struct aqua_t aqua = {
         .fig = figure__init_figure(0, vec2__zeros(), size),
         .nb_vues = 0,
-        .nb_fishes = 0
+        .nb_fishes = 0,
+        .available_vues = malloc(sizeof(struct tailqhead_vue)),
     };
 
-    SLIST_INIT(&(aqua.list_vues));
-    SLIST_INIT(&(aqua.list_fishes));
+    SLIST_INIT(&aqua.list_vues);
+    SLIST_INIT(&aqua.list_fishes);
+    TAILQ_INIT(aqua.available_vues);
 
     return aqua;
 }
@@ -107,9 +109,8 @@ char* aqua__disp(const struct aqua_t aqua, char* dst, long n)
     struct vec2 size = figure__get_width_height(aqua.fig);
     int res = snprintf(dst, n, "%dx%d\n", size.x, size.y);
 
-    if (res < 0 || n <= res) {
+    if (res < 0 || n <= res)
         return dst;
-    }
 
     long size_printed = res;
     aqua__disp_vues(aqua, dst + size_printed, n - size_printed);
@@ -190,6 +191,7 @@ aqua__add_fish(struct fish_t fish, const struct aqua_t aqua)
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
         .list_vues = aqua.list_vues,
+        .available_vues = aqua.available_vues,
         .nb_vues = aqua.nb_vues,
         .list_fishes = new_head,
         .nb_fishes = aqua.nb_fishes + 1
@@ -221,6 +223,7 @@ aqua__del_fish(const char* name_fish, const struct aqua_t aqua)
     struct aqua_t new_aqua = {
         .fig = aqua.fig,
         .list_vues = aqua.list_vues,
+        .available_vues = aqua.available_vues,
         .nb_vues = aqua.nb_vues,
         .list_fishes = new_head,
         .nb_fishes = aqua.nb_fishes - 1
@@ -282,14 +285,11 @@ int aqua__get_nb_fishes(const struct aqua_t aqua)
 // --------------------------------------------------------------------------
 
 struct aqua_t
-aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
+aqua__add_vue(struct vue_t vue, struct aqua_t aqua)
 {
-    struct slisthead_vue new_head = aqua.list_vues;
-
     // <vue already in the aqua?> do not add if it is already existing.
-    if (aqua__get_vue(vue__get_id(vue), aqua) != NULL) {
+    if (aqua__get_vue(vue__get_id(vue), aqua) != NULL)
         return aqua;
-    } // </vue already in the aqua?>
 
     // <vue copy>, copied on the heap.
     struct aqua__entry_vue_t* n1 = malloc(sizeof(struct aqua__entry_vue_t));
@@ -298,73 +298,110 @@ aqua__add_vue(struct vue_t vue, const struct aqua_t aqua)
         TRACE("Impossible to alloc the vue.");
         exit(EXIT_FAILURE);
     }
-    memcpy(n1->data, &vue, sizeof(struct vue_t));
+    *n1->data = vue;
     // </vue copy done>.
 
-    SLIST_INSERT_HEAD(&new_head, n1, entries);
+    SLIST_INSERT_HEAD(&aqua.list_vues, n1, entries);
+    aqua.nb_vues++;
+    aqua__add_available_vue(n1->data, &aqua);
 
-    struct aqua_t new_aqua = {
-        .fig = aqua.fig,
-        .list_vues = new_head,
-        .nb_vues = aqua.nb_vues + 1,
-        .list_fishes = aqua.list_fishes,
-        .nb_fishes = aqua.nb_fishes
-    };
-
-    return new_aqua;
+    return aqua;
 }
 
 struct aqua_t
-aqua__del_vue(int id_vue, const struct aqua_t aqua)
+aqua__del_vue(int id_vue, struct aqua_t aqua)
 {
-    if (aqua.nb_vues <= 0) {
+    if (aqua.nb_vues <= 0)
         return aqua;
-    }
 
     // `aqua__find_list_elt_vue` returns NULL if id_fish is not found.
     struct aqua__entry_vue_t* n1 = aqua__find_list_elt_vue(id_vue, aqua);
-    if (n1 == NULL) {
+    if (n1 == NULL)
         return aqua;
-    }
 
-    struct slisthead_vue new_head = aqua.list_vues;
-    SLIST_REMOVE(&new_head, n1, aqua__entry_vue_t, entries);
+    SLIST_REMOVE(&aqua.list_vues, n1, aqua__entry_vue_t, entries);
+    aqua__get_available_vue(id_vue, &aqua);
+
     free(n1->data); // Vue is copied outside the stack.
     free(n1);
+    aqua.nb_vues--;
 
-    struct aqua_t new_aqua = {
-        .fig = aqua.fig,
-        .list_vues = new_head,
-        .nb_vues = aqua.nb_vues - 1,
-        .list_fishes = aqua.list_fishes,
-        .nb_fishes = aqua.nb_fishes
-    };
-
-    return new_aqua;
+    return aqua;
 }
 
 struct vue_t*
 aqua__get_vue(int id_vue, const struct aqua_t aqua)
 {
-    if (aqua.nb_vues <= 0) {
+    DBG("GETVUE%d", aqua.nb_vues);
+    if (aqua.nb_vues <= 0)
         return NULL;
-    }
 
     // `aqua__find_list_elt_vue` returns NULL if id_fish is not found.
     struct aqua__entry_vue_t* n1 = aqua__find_list_elt_vue(id_vue, aqua);
-    if (n1 == NULL) {
+    if (n1 == NULL)
         return NULL;
-    }
 
     return n1->data;
 }
 
 struct vue_t*
+aqua__get_available_vue(int id_vue, struct aqua_t* aqua)
+{
+    struct aqua__available_vue_t* vue = TAILQ_FIRST(aqua->available_vues);
+    DBG("GETAVAILABLEVUE");
+
+    while (vue != TAILQ_LAST(aqua->available_vues, tailqhead_vue)) {
+        DBG("VUE%p", vue);
+
+        if (vue__get_id(*vue->data) == id_vue) {
+            TAILQ_REMOVE(aqua->available_vues, vue, entries);
+            struct vue_t* out = vue->data;
+            free(vue);
+            return out;
+        }
+
+        vue = TAILQ_NEXT(vue, entries);
+    }
+
+    if (vue__get_id(*vue->data) == id_vue) {
+        TAILQ_REMOVE(aqua->available_vues, vue, entries);
+        struct vue_t* out = vue->data;
+        free(vue);
+        return out;
+    }
+
+    return NULL;
+}
+
+struct vue_t*
+aqua__get_first_available_vue(struct aqua_t* aqua)
+{
+    struct aqua__available_vue_t* vue = TAILQ_FIRST(aqua->available_vues);
+    DBG("first %p", vue);
+    if (vue == NULL)
+        return NULL;
+
+    TAILQ_REMOVE(aqua->available_vues, vue, entries);
+    struct vue_t* out = vue->data;
+    free(vue);
+    return out;
+}
+
+void aqua__add_available_vue(struct vue_t* vue, struct aqua_t* aqua)
+{
+    DBG("ADD AVAILABLE VUE : %p", vue);
+    struct aqua__available_vue_t* newvue = malloc(sizeof(struct aqua__available_vue_t));
+
+    newvue->data = vue;
+    TAILQ_INSERT_TAIL(aqua->available_vues, newvue, entries);
+    DBG("%p %p %p", vue, newvue, TAILQ_FIRST(aqua->available_vues));
+}
+
+struct vue_t*
 aqua__get_vues(const struct aqua_t aqua)
 {
-    if (aqua.nb_vues <= 0) {
+    if (aqua.nb_vues <= 0)
         return NULL;
-    }
 
     struct vue_t*
         array
@@ -378,9 +415,7 @@ aqua__get_vues(const struct aqua_t aqua)
     struct slisthead_vue head = aqua.list_vues;
     struct aqua__entry_vue_t* np;
     SLIST_FOREACH(np, &head, entries)
-    {
-        array[index_array++] = *(np->data);
-    }
+    array[index_array++] = *(np->data);
 
     return array;
 }
@@ -420,6 +455,14 @@ int aqua__destroy_aqua(struct aqua_t* ptr_aqua)
         free(n2);
         ptr_aqua->nb_fishes -= 1;
     }
+
+    struct aqua__available_vue_t* vue;
+    while (!TAILQ_EMPTY(ptr_aqua->available_vues)) {
+        vue = TAILQ_FIRST(ptr_aqua->available_vues);
+        TAILQ_REMOVE(ptr_aqua->available_vues, vue, entries);
+        free(vue);
+    }
+    free(ptr_aqua->available_vues);
 
     return 1;
 }
