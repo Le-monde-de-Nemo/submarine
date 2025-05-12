@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/queue.h>
 #include <time.h>
 
 #include "mobility.h"
@@ -77,12 +78,7 @@ struct mobility_t
 init_mobility(const char* name, const struct vec2 init_pos)
 {
     struct mobility_t mob = {
-        .mobility_function_name = name,
-        .last_coordinates = init_pos,
-        .last_timestamp = mobility_get_timestamp(),
-        .duration_to_move = 0, // 0 seconds by default when fish is created.
-                               // Because it already reached its target pos.
-        .next_coordinates = init_pos // By default the fish is stopped.
+        .mobility_function_name = name
     };
 
     get_mobility_function_duration(name,
@@ -91,7 +87,25 @@ init_mobility(const char* name, const struct vec2 init_pos)
     get_mobility_function_target_pos(name,
         &(mob.mobility_function_target_pos));
 
+    STAILQ_INIT(&(mob.head));
+
     return mob;
+}
+
+int destroy_mobility(const struct mobility_t* ptr_mob)
+{
+    if (!ptr_mob) {
+        return 0;
+    }
+
+    struct stail_mobilities head = ptr_mob->head;
+    while (!STAILQ_EMPTY(&head)) {
+        struct mobility_entry_t* n1 = STAILQ_FIRST(&head);
+        STAILQ_REMOVE_HEAD(&head, entries);
+        free(n1);
+    }
+
+    return 0;
 }
 
 // --------------------------------------------------------------------------
@@ -103,7 +117,11 @@ int random_way_point_duration(const struct mobility_t mob)
 
 struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 {
-    srand(mobility_get_timestamp());
+    struct stail_mobilities head = mob.head;
+    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+    time_t last_timestamp = (first == NULL) ? 0 : first->last_timestamp;
+    srand(mobility_get_timestamp() + last_timestamp);
+
     struct vec2 to_return = vec2__zeros();
     to_return.x = rand() % 100;
     to_return.y = rand() % 100;
@@ -115,17 +133,27 @@ struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 
 int diagonal_way_point_duration(const struct mobility_t mob)
 {
-    if (mob.next_coordinates.x != 100 || mob.next_coordinates.y != 100) {
+    struct stail_mobilities head = mob.head;
+    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+
+    int next_x = (first == NULL) ? 0 : first->next_coordinates.x;
+    int next_y = (first == NULL) ? 0 : first->next_coordinates.y;
+
+    if (next_x != 100 || next_y != 100) {
         return 5;
     }
-
     return 10;
 }
 
 struct vec2 diagonal_way_point_target_pos(const struct mobility_t mob)
 {
+    struct stail_mobilities head = mob.head;
+    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+
+    struct vec2 next_coord = (first == NULL) ? vec2__zeros() : first->next_coordinates;
+
     // The fish has not been updated yet even if he reached `next_coordinates`.
-    struct vec2 current_pos = mob.next_coordinates;
+    struct vec2 current_pos = next_coord;
     struct vec2 to_return = vec2__zeros();
 
     if (current_pos.x == 0 && current_pos.y == 0) {

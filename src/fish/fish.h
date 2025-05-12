@@ -133,7 +133,7 @@ fish__set_current_pos(const struct vec2 pos, struct fish_t fish);
 //                                              then it does nothing.
 // ----------------------------------------------------------------------
 
-struct fish_t fish__update_mobility(const struct fish_t);
+struct fish_t fish__update_mobility(struct fish_t);
 
 // ----------------------------------------------------------------------
 // To access to the next pos of the fish, given his mobility functions.

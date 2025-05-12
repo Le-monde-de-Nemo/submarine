@@ -2,6 +2,7 @@
 #define __MOBILITY__H__
 
 #include "vec2.h"
+#include <sys/queue.h>
 #include <time.h>
 
 // ----------------------------------------------------------------------
@@ -18,21 +19,14 @@ enum mobility_functions {
 };
 
 // ----------------------------------------------------------------------
-// To store the mobility information for a fish.
+// To store a position to reach for the fish.
 //      See `src/mobility/mobility.c`.
 // ----------------------------------------------------------------------
 
-struct mobility_t {
-    // Could be "RandomWayPoint" or "DirectWayPoint".
-    const char* mobility_function_name;
-
-    // To know where and when the fish will go, given a former position.
-    // See `src/fish/fish.c`.
-    int (*mobility_function_duration)(const struct mobility_t);
-    struct vec2 (*mobility_function_target_pos)(const struct mobility_t);
-
-    // Last position recorded.
-    struct vec2 last_coordinates;
+struct mobility_entry_t {
+    // This is a `FILO` from `<sys/queue.h>`.
+    STAILQ_ENTRY(mobility_entry_t)
+    entries;
 
     // The displayer could call `get_fishes`
     //          before one fish reached his goal.
@@ -43,6 +37,26 @@ struct mobility_t {
     // the next pos to move.
     int duration_to_move; // Time in seconds.
     struct vec2 next_coordinates;
+};
+
+// ----------------------------------------------------------------------
+// To store the mobility information for a fish.
+//      See `src/mobility/mobility.c`.
+// ----------------------------------------------------------------------
+
+// This is a `FILO` of position to reach for the fish.
+STAILQ_HEAD(stail_mobilities, mobility_entry_t);
+
+struct mobility_t {
+    // Could be "RandomWayPoint" or "DirectWayPoint".
+    const char* mobility_function_name;
+
+    // To know where and when the fish will go, given a former position.
+    // See `src/fish/fish.c`.
+    int (*mobility_function_duration)(const struct mobility_t);
+    struct vec2 (*mobility_function_target_pos)(const struct mobility_t);
+
+    struct stail_mobilities head;
 };
 
 // ----------------------------------------------------------------------
@@ -79,6 +93,9 @@ void get_mobility_function_target_pos(const char* name,
 
 struct mobility_t
 init_mobility(const char* name, const struct vec2 init_pos);
+
+/* Returns 1 if it has been done with erros, 0 otherwise. */
+int destroy_mobility(const struct mobility_t* ptr_mob);
 
 // ----------------------------------------------------------------------
 // Mobility Function

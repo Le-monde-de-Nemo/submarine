@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/queue.h>
 #include <time.h>
 
 #include "figure.h"
@@ -188,54 +189,85 @@ fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
 
 // --------------------------------------------------------------------------
 
-struct fish_t fish__update_mobility(const struct fish_t fish)
+int _fish__get_move_last_timestamp(const struct fish_t fish)
 {
-    struct fish_t new_fish = fish__set_current_pos(
-        fish__get_current_pos(fish),
-        fish);
+    struct stail_mobilities head = fish.mob.head;
+    struct mobility_entry_t* first = STAILQ_FIRST(&head);
 
-    if (!fish__is_started(new_fish)) {
-        return new_fish;
+    if (first == NULL) {
+        return 0;
+    }
+    return first->last_timestamp;
+}
+
+// --------------------------------------------------------------------------
+
+struct fish_t fish__update_mobility(struct fish_t fish)
+{
+    if (!fish__is_started(fish)) {
+        return fish;
     }
 
     // <is the last mobility finished?>
     time_t current_timestamp = mobility_get_timestamp();
-    time_t current_mob_duration = current_timestamp - fish.mob.last_timestamp;
+    time_t last_timestamp_head = _fish__get_move_last_timestamp(fish);
+    int current_mob_duration = current_timestamp - last_timestamp_head;
 
-    // If multiple `get_fishes` are done, but one is not finished,
-    //                                      then duration decreases.
-    new_fish.mob.last_timestamp = current_timestamp;
-    new_fish.mob.duration_to_move = fish__get_move_duration(fish) - current_mob_duration;
+    // If `Yes`, the move is finished, just remove it.
+    // int target_mob_duration = fish__get_move_duration(fish);
+    // if (target_mob_duration <= current_mob_duration) {
+    // struct mobility_entry_t* n = STAILQ_FIRST(&(fish.mob.head));
+    // STAILQ_REMOVE_HEAD(&(fish.mob.head), entries);
+    // free(n);
+    //} // </is the last mobility finished?>
 
-    if ((int)current_mob_duration < fish__get_move_duration(fish)) {
-        return new_fish;
-    } // </is the last mobility finished?>
+    // <add the next movement to do next>
+    struct mobility_entry_t* new_mob = (struct mobility_entry_t*)malloc(sizeof(struct mobility_entry_t));
+    if (new_mob == NULL) {
+        fprintf(stderr, "new_mob is NULL in `fish__update_mobility`.\n");
+        exit(EXIT_FAILURE);
+    }
 
-    // Now the fish reached his target, because the move duration is over.
-    // Then, we have to give another target to the fish.
-    new_fish = fish__set_current_pos(
-        fish__get_target_pos(new_fish),
-        new_fish);
+    new_mob->last_timestamp = 0; // It will be updated at the end of this func,
+                                 // if this new move will be the head.
 
-    new_fish.mob.last_coordinates = fish__get_current_pos(fish);
-    new_fish.mob.duration_to_move = fish.mob.mobility_function_duration(fish.mob);
-    new_fish.mob.next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
+    new_mob->duration_to_move = fish.mob.mobility_function_duration(fish.mob);
+    new_mob->next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
 
-    return new_fish;
+    STAILQ_INSERT_TAIL(&(fish.mob.head), new_mob, entries);
+    // </add the next movement to do next>
+
+    // <update the timestamp> only of the *head*.
+    struct mobility_entry_t* n = STAILQ_FIRST(&(fish.mob.head));
+    if (n)
+        n->last_timestamp = current_timestamp;
+    // </update the timestamp>
+
+    return fish;
 }
 
 // --------------------------------------------------------------------------
 
 struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
-    return fish.mob.next_coordinates;
+    struct mobility_entry_t* first = STAILQ_FIRST(&(fish.mob.head));
+
+    if (first == NULL) {
+        return vec2__zeros();
+    }
+    return first->next_coordinates;
 }
 
 // --------------------------------------------------------------------------
 
 int fish__get_move_duration(const struct fish_t fish)
 {
-    return fish.mob.duration_to_move;
+    struct mobility_entry_t* first = STAILQ_FIRST(&(fish.mob.head));
+
+    if (first == NULL) {
+        return 0;
+    }
+    return first->duration_to_move;
 }
 
 // --------------------------------------------------------------------------
@@ -250,6 +282,7 @@ int fish__destroy_fish(struct fish_t* ptr_fish)
         free(ptr_fish->name_fish);
     }
 
+    destroy_mobility(&(ptr_fish->mob));
     figure__destroy_figure(&(ptr_fish->fig));
     return 0;
 }
