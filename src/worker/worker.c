@@ -208,9 +208,9 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
     int nogreeting = 0;
     char writebuf[BUFLEN] = {};
 
-    switch(state->vars.nwords) {
-    case 1:  // gets the first available vue id
-        if(store.global_aqua.list_vues.slh_first != NULL) {
+    switch (state->vars.nwords) {
+    case 1: // gets the first available vue id
+        if (store.global_aqua.list_vues.slh_first != NULL) {
             id = store.global_aqua.list_vues.slh_first->data->fig.id;
         } else {
             TRACE("Empty vue, returning nothing in hello");
@@ -223,10 +223,10 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
             state->protostate = CLEAN_VARS;
             return halt;
         }
-    break;
-    case 4:  // hello in as [id]
+        break;
+    case 4: // hello in as [id]
         sscanf(state->vars.words[3], "N%d", &id);
-    break;
+        break;
     default:
         TRACE("Invalid call to hello");
         strncpy(writebuf, "usage: hello [in as N$ID]\n", BUFLEN);
@@ -236,12 +236,12 @@ int worker__hello(int sockfd, struct worker__fsm_state* state)
         }
         state->protostate = CLEAN_VARS;
         return halt;
-    break;
+        break;
     }
 
     state->vars.current_vue = aqua__get_vue(id, store.global_aqua);
-    if(state->vars.current_vue == NULL) {
-        if(store.global_aqua.list_vues.slh_first != NULL) {
+    if (state->vars.current_vue == NULL) {
+        if (store.global_aqua.list_vues.slh_first != NULL) {
             id = store.global_aqua.list_vues.slh_first->data->fig.id;
         } else {
             TRACE("Empty vue, returning nothing in hello");
@@ -403,9 +403,10 @@ int worker__get_fishes_continuously(int sockfd, struct worker__fsm_state* state)
 int worker__ls(int sockfd, struct worker__fsm_state* state)
 {
     int halt = FALSE;
-    for(int i = 0; i < atoi(state->vars.words[1]); i++) {
+    for (int i = 0; i < atoi(state->vars.words[1]); i++) {
         halt = get_fishes(sockfd, state);
-        if(halt) break;
+        if (halt)
+            break;
     }
 
     state->protostate = CLEAN_VARS;
