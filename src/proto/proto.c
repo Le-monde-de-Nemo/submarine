@@ -28,7 +28,7 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
 {
     char acc[n];
     char fish_buffer[n];
-    acc[0] = '\0';  // Initialiser la chaîne vide
+    acc[0] = '\0'; // Initialiser la chaîne vide
 
     strcpy(acc, "list ");
     long n_acc = strlen(acc);
@@ -44,11 +44,9 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
     for (int i = 0; i < n_fishes; ++i) {
         struct fish_t fish = fishes[i];
 
-        // Pos globale en pixels dans l'aquarium
         int global_x = (fish__get_current_pos(fish).x * aqua_dim.x) / 100;
         int global_y = (fish__get_current_pos(fish).y * aqua_dim.y) / 100;
 
-        // Pos relative dans la vue (toujours en pixels, vue locale)
         int x_vue = (global_x - vue_pos.x) * 100 / vue_dim.x;
         int y_vue = (global_y - vue_pos.y) * 100 / vue_dim.y;
 
@@ -67,7 +65,7 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
 
     strcat(acc, "\n");
     strncpy(dst, acc, n);
-    dst[n - 1] = '\0';  // Sécurité
+    dst[n - 1] = '\0'; // Sécurité
 
     return dst;
 }
