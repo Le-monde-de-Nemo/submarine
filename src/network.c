@@ -3,6 +3,8 @@
 #include "store.h"
 #include "worker.h"
 #include <arpa/inet.h>
+#include <asm-generic/errno-base.h>
+#include <bits/pthreadtypes.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -27,13 +29,14 @@ struct events_entry_t {
     link;
     struct epoll_event event;
     struct worker__fsm_state* state;
+    pthread_mutex_t conn_mutex;
     int fd;
 };
 
 static struct events_fifo_t available_events;
 static pthread_mutex_t available_events_mutex;
 static struct events_entry_t events_entries[MAX_EVENTS];
-static int listen_sock, conn_sock, nfds, epollfd;
+static int listen_sock, nfds, epollfd;
 static socklen_t cli_socket_len;
 static struct sockaddr_in serv_addr, cli_addr;
 
@@ -109,6 +112,39 @@ void network_init(char* host, int portno)
     }
 }
 
+void accept_new_conn(int epollfd, int listen_sock, struct events_entry_t* event)
+{
+    int conn_sock = accept(listen_sock,
+        (struct sockaddr*)&cli_addr, &cli_socket_len);
+
+    if (conn_sock == -1) {
+        perror("accept() failed");
+        exit(EXIT_FAILURE);
+    }
+
+    setnonblocking(conn_sock);
+
+    pthread_mutex_lock(&available_events_mutex);
+    struct events_entry_t* new_event = STAILQ_FIRST(&available_events);
+    STAILQ_REMOVE_HEAD(&available_events, link);
+    pthread_mutex_unlock(&available_events_mutex);
+
+    new_event->event.events = EPOLLIN | EPOLLONESHOT;
+    new_event->fd = conn_sock;
+    worker__init_fsm_state(new_event->state);
+    pthread_mutex_init(&new_event->conn_mutex, NULL);
+
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &new_event->event) == -1) {
+        perror("epoll_ctl() failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (epoll_ctl(epollfd, EPOLL_CTL_MOD, event->fd, &event->event) == -1) {
+        perror("epoll_ctl() failed");
+        exit(EXIT_FAILURE);
+    }
+}
+
 /*
  *  Function used in a thread to deal with network requests
  *
@@ -129,38 +165,8 @@ void* workerth(void* args)
         for (int n = 0; n < nfds; ++n) {
             event = events[n].data.ptr;
 
-            if (event->fd == listen_sock) {
-                conn_sock = accept(listen_sock,
-                    (struct sockaddr*)&cli_addr, &cli_socket_len);
-
-                if (conn_sock == -1) {
-                    perror("accept() failed");
-                    exit(EXIT_FAILURE);
-                }
-
-                setnonblocking(conn_sock);
-
-                pthread_mutex_lock(&available_events_mutex);
-                struct events_entry_t* new_event = STAILQ_FIRST(&available_events);
-                STAILQ_REMOVE_HEAD(&available_events, link);
-                pthread_mutex_unlock(&available_events_mutex);
-
-                new_event->event.events = EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLONESHOT;
-                new_event->fd = conn_sock;
-                worker__init_fsm_state(new_event->state);
-
-                if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock,
-                        &new_event->event)
-                    == -1) {
-                    perror("epoll_ctl() failed");
-                    exit(EXIT_FAILURE);
-                }
-
-                if (epoll_ctl(epollfd, EPOLL_CTL_MOD, event->fd, &event->event) == -1) {
-                    perror("epoll_ctl() failed");
-                    exit(EXIT_FAILURE);
-                }
-            } // End receive new connection
+            if (event->fd == listen_sock)
+                accept_new_conn(epollfd, listen_sock, event);
 
             else if (events[n].events & (EPOLLHUP | EPOLLRDHUP)) {
                 epoll_ctl(epollfd, EPOLL_CTL_DEL, event->fd, &events[n]);
@@ -198,10 +204,16 @@ void network_finalize()
 
 int do_use_fd(struct events_entry_t* event)
 {
+    int rc = 0;
+    if (pthread_mutex_trylock(&event->conn_mutex) & EBUSY)
+        return 0;
+
     do {
-        if (worker__run_fsm_step(event->fd, event->state))
-            return 1;
-    } while (event->state->protostate != READ_BUFF);
+        rc = worker__run_fsm_step(event->fd, event->state);
+        if (rc)
+            break;
+    } while (event->state->protostate & ~READ_BUFF);
+    pthread_mutex_unlock(&event->conn_mutex);
 
     return 0;
 }

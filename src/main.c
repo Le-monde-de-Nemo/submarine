@@ -52,7 +52,7 @@
 #define LHOST_WORKER "127.0.0.1"
 
 #ifndef THREAD_POOL_SIZE
-#define THREAD_POOL_SIZE 2
+#define THREAD_POOL_SIZE 5
 #endif
 
 void store__init(void);

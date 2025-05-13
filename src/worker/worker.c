@@ -6,6 +6,7 @@
 #include "store.h"
 #include "vec2.h"
 #include "vue.h"
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -146,12 +147,17 @@ int worker__read_buffer(int sockfd, struct worker__fsm_state* state)
         state->vars.nbytes_socket = read(sockfd, state->vars.buffer + state->vars.buff_offset, BUFLEN - state->vars.buff_offset);
         state->vars.ncmds = worker__count_cmds(state->vars.buffer, state->vars.buff_offset);
 
-        if (state->vars.nbytes_socket <= 0) {
+        if (state->vars.nbytes_socket > 0)
+            state->protostate = PARSE_BUFF;
+
+        else if (state->vars.nbytes_socket == 0 /* EOF */ || errno & ~(EAGAIN | EWOULDBLOCK)) {
             TRACE("Error when reading the socket (or connection closed)"); // LOG
             state->protostate = ERROR;
-        } else {
-            state->protostate = PARSE_BUFF;
         }
+
+        else
+            state->protostate = READ_BUFF;
+
     } else {
         // There are still other commands to read on the buffer
         state->protostate = PARSE_BUFF;
