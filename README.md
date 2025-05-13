@@ -14,6 +14,8 @@ It is possible to use `help` in the *repl*, to get a list of functions.
 
 To change the port, just modify the file `./controller.example.cfg`.
 
+Then, you can do `./controller controller.example.cfg`.
+
 ### Prerequisities
 
 You will need:
