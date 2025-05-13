@@ -1,3 +1,4 @@
-#include "aqua.h"
+#include "store.h"
 
-struct aqua_t global_aqua;
+// global store
+struct store_t store = {};
