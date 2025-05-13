@@ -352,7 +352,12 @@ int get_fishes(int sockfd, struct worker__fsm_state* state)
     struct fish_t* fishes = aqua__get_fishes(store.global_aqua);
     int nb_fishes = aqua__get_nb_fishes(store.global_aqua);
 
-    struct vec2 origin = vue__get_current_pos(*state->vars.current_vue);
+    struct vec2 origin = vec2__rmul(100, vue__get_current_pos(*state->vars.current_vue));
+    if (aqua__get_width_height(store.global_aqua).x != 0)
+        origin.x /= aqua__get_width_height(store.global_aqua).x;
+
+    if (aqua__get_width_height(store.global_aqua).y != 0)
+        origin.x /= aqua__get_width_height(store.global_aqua).y;
 
     proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
 
