@@ -42,11 +42,11 @@
 #endif
 
 #ifndef DEFAULT_AQUAW
-#define DEFAULT_AQUAW 1337
+#define DEFAULT_AQUAW 1000
 #endif
 
 #ifndef DEFAULT_AQUAH
-#define DEFAULT_AQUAH 1337
+#define DEFAULT_AQUAH 1000
 #endif
 
 #define LHOST_WORKER "127.0.0.1"

@@ -8,10 +8,11 @@
 //
 // All of these functions returns dst
 #include "fish.h"
+#include "vue.h"
 
 char* proto__greeting(char* dst, long n, int id, int nogreeting);
 
-char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vec2 origin);
+char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vue_t* vue);
 
 char* proto__log(char* dst, long n);
 

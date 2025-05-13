@@ -24,7 +24,7 @@ char* proto__greeting(char* dst, long n, int id, int nogreeting)
     return dst;
 }
 
-char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vec2 origin)
+char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, struct vue_t* vue)
 {
     char acc[n] = {};
     char fish_buffer[n];
@@ -33,13 +33,20 @@ char* proto__get_fishes(char* dst, long n, struct fish_t* fishes, int n_fishes, 
 
     strcpy(acc, "list ");
     long n_acc = sizeof("list ");
+    struct vec2 aqua_dim = aqua__get_width_height(store.global_aqua);
+    struct vec2 vue_pos = vue__get_current_pos(*vue);
+    struct vec2 vue_dim = vue__get_width_height(*vue);
+
+    DBG("%d %d", aqua_dim.x, aqua_dim.y);
+    DBG("%d %d", vue_pos.x, vue_pos.y);
+    DBG("%d %d", vue_dim.x, vue_dim.y);
 
     for (int i = 0; i < n_fishes; ++i) {
         struct fish_t fish = fishes[i];
         int len = snprintf(fish_buffer, n, "[%s at %dx%d,%dx%d,%d] ",
             fish__get_name(fish),
-            fish__get_current_pos(fish).x - origin.x,
-            fish__get_current_pos(fish).y - origin.y,
+            (fish__get_current_pos(fish).x * aqua_dim.x - vue_pos.x) / vue_dim.x,
+            (fish__get_current_pos(fish).y * aqua_dim.y - vue_pos.y) / vue_dim.y,
             fish__get_width_height(fish).x,
             fish__get_width_height(fish).y,
             fish__get_move_duration(fish));

@@ -359,7 +359,7 @@ int get_fishes(int sockfd, struct worker__fsm_state* state)
     if (aqua__get_width_height(store.global_aqua).y != 0)
         origin.x /= aqua__get_width_height(store.global_aqua).y;
 
-    proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, origin);
+    proto__get_fishes(writebuf, BUFLEN, fishes, nb_fishes, state->vars.current_vue);
 
     if (write(sockfd, writebuf, strlen(writebuf)) == -1) {
         perror("Error in writing the response to getFishes"); // LOG
