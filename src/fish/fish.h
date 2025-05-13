@@ -159,7 +159,7 @@ int fish__get_move_duration(const struct fish_t fish);
 //      It returns 0 if it has been done with error.
 // ----------------------------------------------------------------------
 
-int fish__destroy_fish(struct fish_t* ptr_fish);
+int fish__destroy_fish(const struct fish_t* ptr_fish);
 
 // ----------------------------------------------------------------------
 

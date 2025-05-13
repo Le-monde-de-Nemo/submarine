@@ -127,26 +127,14 @@ int fish__is_started(const struct fish_t fish)
 
 struct fish_t fish__start_fish(struct fish_t fish)
 {
-    struct fish_t new_fish = {
-        .name_fish = fish.name_fish,
-        .is_started = 1,
-        .fig = fish.fig,
-        .mob = fish.mob,
-    };
-
-    return new_fish;
+    fish.is_started = 1;
+    return fish;
 }
 
 struct fish_t fish__stop_fish(struct fish_t fish)
 {
-    struct fish_t new_fish = {
-        .name_fish = fish.name_fish,
-        .is_started = 0,
-        .fig = fish.fig,
-        .mob = fish.mob,
-    };
-
-    return new_fish;
+    fish.is_started = 0;
+    return fish;
 }
 
 // --------------------------------------------------------------------------
@@ -175,29 +163,27 @@ struct vec2 fish__get_current_pos(const struct fish_t fish)
 }
 
 struct fish_t
-fish__set_current_pos(const struct vec2 pos, const struct fish_t fish)
+fish__set_current_pos(const struct vec2 pos, struct fish_t fish)
 {
-    struct fish_t new_fish = {
-        .name_fish = fish.name_fish,
-        .is_started = fish.is_started,
-        .fig = figure__set_current_pos(pos, fish.fig),
-        .mob = fish.mob
-    };
-
-    return new_fish;
+    fish.fig = figure__set_current_pos(pos, fish.fig);
+    return fish;
 }
 
 // --------------------------------------------------------------------------
 
 int _fish__get_move_last_timestamp(const struct fish_t fish)
 {
-    struct stail_mobilities head = fish.mob.head;
-    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+    struct mobility_entry_t* last;
+    if (!TAILQ_EMPTY(&(fish.mob.head))) {
+        last = TAILQ_LAST(&(fish.mob.head), stail_mobilities);
+    } else {
+        last = TAILQ_FIRST(&(fish.mob.head));
+    }
 
-    if (first == NULL) {
+    if (last == NULL) {
         return 0;
     }
-    return first->last_timestamp;
+    return last->last_timestamp;
 }
 
 // --------------------------------------------------------------------------
@@ -214,12 +200,12 @@ struct fish_t fish__update_mobility(struct fish_t fish)
     int current_mob_duration = current_timestamp - last_timestamp_head;
 
     // If `Yes`, the move is finished, just remove it.
-    // int target_mob_duration = fish__get_move_duration(fish);
-    // if (target_mob_duration <= current_mob_duration) {
-    // struct mobility_entry_t* n = STAILQ_FIRST(&(fish.mob.head));
-    // STAILQ_REMOVE_HEAD(&(fish.mob.head), entries);
-    // free(n);
-    //} // </is the last mobility finished?>
+    int target_mob_duration = fish__get_move_duration(fish);
+    if (target_mob_duration <= current_mob_duration && !TAILQ_EMPTY(&(fish.mob.head))) {
+        struct mobility_entry_t* n = TAILQ_LAST(&(fish.mob.head), stail_mobilities);
+        TAILQ_REMOVE(&(fish.mob.head), n, entries);
+        free(n);
+    } // </is the last mobility finished?>
 
     // <add the next movement to do next>
     struct mobility_entry_t* new_mob = (struct mobility_entry_t*)malloc(sizeof(struct mobility_entry_t));
@@ -234,14 +220,14 @@ struct fish_t fish__update_mobility(struct fish_t fish)
     new_mob->duration_to_move = fish.mob.mobility_function_duration(fish.mob);
     new_mob->next_coordinates = fish.mob.mobility_function_target_pos(fish.mob);
 
-    STAILQ_INSERT_TAIL(&(fish.mob.head), new_mob, entries);
+    TAILQ_INSERT_HEAD(&(fish.mob.head), new_mob, entries);
     // </add the next movement to do next>
 
     // <update the timestamp> only of the *head*.
-    struct mobility_entry_t* n = STAILQ_FIRST(&(fish.mob.head));
-    if (n)
-        n->last_timestamp = current_timestamp;
-    // </update the timestamp>
+    struct mobility_entry_t* n = TAILQ_LAST(&(fish.mob.head), stail_mobilities);
+    n->last_timestamp = current_timestamp;
+    // n->duration_to_move = target_mob_duration - current_mob_duration;
+    //  </update the timestamp>
 
     return fish;
 }
@@ -250,29 +236,39 @@ struct fish_t fish__update_mobility(struct fish_t fish)
 
 struct vec2 fish__get_target_pos(const struct fish_t fish)
 {
-    struct mobility_entry_t* first = STAILQ_FIRST(&(fish.mob.head));
+    struct mobility_entry_t* last;
+    if (!TAILQ_EMPTY(&(fish.mob.head))) {
+        last = TAILQ_LAST(&(fish.mob.head), stail_mobilities);
+    } else {
+        last = TAILQ_FIRST(&(fish.mob.head));
+    }
 
-    if (first == NULL) {
+    if (last == NULL) {
         return vec2__zeros();
     }
-    return first->next_coordinates;
+    return last->next_coordinates;
 }
 
 // --------------------------------------------------------------------------
 
 int fish__get_move_duration(const struct fish_t fish)
 {
-    struct mobility_entry_t* first = STAILQ_FIRST(&(fish.mob.head));
+    struct mobility_entry_t* last;
+    if (!TAILQ_EMPTY(&(fish.mob.head))) {
+        last = TAILQ_LAST(&(fish.mob.head), stail_mobilities);
+    } else {
+        last = TAILQ_FIRST(&(fish.mob.head));
+    }
 
-    if (first == NULL) {
+    if (last == NULL) {
         return 0;
     }
-    return first->duration_to_move;
+    return last->duration_to_move;
 }
 
 // --------------------------------------------------------------------------
 
-int fish__destroy_fish(struct fish_t* ptr_fish)
+int fish__destroy_fish(const struct fish_t* ptr_fish)
 {
     if (!ptr_fish) {
         return 0;

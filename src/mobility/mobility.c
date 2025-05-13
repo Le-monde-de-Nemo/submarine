@@ -87,7 +87,7 @@ init_mobility(const char* name, const struct vec2 init_pos)
     get_mobility_function_target_pos(name,
         &(mob.mobility_function_target_pos));
 
-    STAILQ_INIT(&(mob.head));
+    TAILQ_INIT(&(mob.head));
 
     return mob;
 }
@@ -98,11 +98,13 @@ int destroy_mobility(const struct mobility_t* ptr_mob)
         return 0;
     }
 
+    struct mobility_entry_t *n1, *n2;
     struct stail_mobilities head = ptr_mob->head;
-    while (!STAILQ_EMPTY(&head)) {
-        struct mobility_entry_t* n1 = STAILQ_FIRST(&head);
-        STAILQ_REMOVE_HEAD(&head, entries);
+    n1 = TAILQ_FIRST(&head);
+    while (n1 != NULL) {
+        n2 = TAILQ_NEXT(n1, entries);
         free(n1);
+        n1 = n2;
     }
 
     return 0;
@@ -118,7 +120,7 @@ int random_way_point_duration(const struct mobility_t mob)
 struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 {
     struct stail_mobilities head = mob.head;
-    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+    struct mobility_entry_t* first = TAILQ_FIRST(&head);
     time_t last_timestamp = (first == NULL) ? 0 : first->last_timestamp;
     srand(mobility_get_timestamp() + last_timestamp);
 
@@ -133,11 +135,15 @@ struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 
 int diagonal_way_point_duration(const struct mobility_t mob)
 {
-    struct stail_mobilities head = mob.head;
-    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+    struct mobility_entry_t* last;
+    if (!TAILQ_EMPTY(&(mob.head))) {
+        last = TAILQ_LAST(&(mob.head), stail_mobilities);
+    } else {
+        last = TAILQ_FIRST(&(mob.head));
+    }
 
-    int next_x = (first == NULL) ? 0 : first->next_coordinates.x;
-    int next_y = (first == NULL) ? 0 : first->next_coordinates.y;
+    int next_x = (last == NULL) ? -10 : last->next_coordinates.x;
+    int next_y = (last == NULL) ? -10 : last->next_coordinates.y;
 
     if (next_x != 100 || next_y != 100) {
         return 5;
@@ -147,10 +153,14 @@ int diagonal_way_point_duration(const struct mobility_t mob)
 
 struct vec2 diagonal_way_point_target_pos(const struct mobility_t mob)
 {
-    struct stail_mobilities head = mob.head;
-    struct mobility_entry_t* first = STAILQ_FIRST(&head);
+    struct mobility_entry_t* last;
+    if (!TAILQ_EMPTY(&(mob.head))) {
+        last = TAILQ_LAST(&(mob.head), stail_mobilities);
+    } else {
+        last = TAILQ_FIRST(&(mob.head));
+    }
 
-    struct vec2 next_coord = (first == NULL) ? vec2__zeros() : first->next_coordinates;
+    struct vec2 next_coord = (last == NULL) ? vec2__zeros() : last->next_coordinates;
 
     // The fish has not been updated yet even if he reached `next_coordinates`.
     struct vec2 current_pos = next_coord;

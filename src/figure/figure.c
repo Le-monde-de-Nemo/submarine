@@ -70,7 +70,7 @@ figure__set_width_height(const struct vec2 size,
 
 // --------------------------------------------------------------------------
 
-int figure__destroy_figure(struct figure_t* ptr_fig)
+int figure__destroy_figure(const struct figure_t* ptr_fig)
 {
     if (!ptr_fig) {
         return 1;

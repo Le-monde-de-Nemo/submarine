@@ -25,7 +25,7 @@ enum mobility_functions {
 
 struct mobility_entry_t {
     // This is a `FILO` from `<sys/queue.h>`.
-    STAILQ_ENTRY(mobility_entry_t)
+    TAILQ_ENTRY(mobility_entry_t)
     entries;
 
     // The displayer could call `get_fishes`
@@ -45,7 +45,7 @@ struct mobility_entry_t {
 // ----------------------------------------------------------------------
 
 // This is a `FILO` of position to reach for the fish.
-STAILQ_HEAD(stail_mobilities, mobility_entry_t);
+TAILQ_HEAD(stail_mobilities, mobility_entry_t);
 
 struct mobility_t {
     // Could be "RandomWayPoint" or "DirectWayPoint".

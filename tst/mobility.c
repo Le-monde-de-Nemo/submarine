@@ -172,7 +172,7 @@ int test__update_mobility_with_get_fish(void)
     vec_current = fish__get_current_pos(*aqua__get_fish(array_name_fishes[1], aqua));
     local_ret |= myassert(
         vec_current.x == 0 && vec_current.y == 0,
-        "testing get_fish and mobility. `fish1` should have reached its goal, current pos: (0, 0), after 10seconds.\n");
+        "testing get_fish and mobility. `Fish1` should have reached its goal, current pos: (0, 0), after 10seconds.\n");
 
     local_ret |= myassert(
         fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 5,
