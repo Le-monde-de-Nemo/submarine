@@ -47,6 +47,10 @@ struct controller_t controller__load_conf(char* filepath)
     char* eq_pos = NULL;
 
     FILE* file = fopen(filepath, "r");
+    if (file == NULL) {
+        fprintf(stderr, "The config file you gave does not exist!\n");
+        exit(EXIT_FAILURE);
+    }
 
     while (fgets(read_buf, CONF_BUF_SIZE, file) != NULL) {
         if ((ht_pos = strchr(read_buf, '#')))
