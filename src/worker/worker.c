@@ -405,6 +405,10 @@ int worker__ping(int sockfd, struct worker__fsm_state* state)
 
 int worker__log_out(int sockfd, struct worker__fsm_state* state)
 {
+    if (state->vars.current_vue != NULL)
+        aqua__add_available_vue(state->vars.current_vue, &store.global_aqua);
+    state->vars.current_vue = NULL;
+
     TRACE("in LOGOUT:"); // LOG
     int halt = FALSE;
     char writebuf[BUFLEN] = {};
