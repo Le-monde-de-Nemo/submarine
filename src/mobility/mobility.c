@@ -98,12 +98,12 @@ init_mobility(const char* name, const struct vec2 init_pos)
 
 int random_way_point_duration(const struct mobility_t mob)
 {
-    return 5;
+    return 5000;
 }
 
 struct vec2 random_way_point_target_pos(const struct mobility_t mob)
 {
-    srand(mobility_get_timestamp());
+    srand(mobility_get_timestamp() + mob.duration_to_move);
     struct vec2 to_return = vec2__zeros();
     to_return.x = rand() % 100;
     to_return.y = rand() % 100;
@@ -119,7 +119,7 @@ int diagonal_way_point_duration(const struct mobility_t mob)
         return 5;
     }
 
-    return 10;
+    return 10000;
 }
 
 struct vec2 diagonal_way_point_target_pos(const struct mobility_t mob)

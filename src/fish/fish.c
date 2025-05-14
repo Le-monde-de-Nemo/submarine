@@ -202,6 +202,9 @@ struct fish_t fish__update_mobility(const struct fish_t fish)
     time_t current_timestamp = mobility_get_timestamp();
     time_t current_mob_duration = current_timestamp - fish.mob.last_timestamp;
 
+    // To get it in milliseconds.
+    current_mob_duration *= 1000;
+
     // If multiple `get_fishes` are done, but one is not finished,
     //                                      then duration decreases.
     new_fish.mob.last_timestamp = current_timestamp;

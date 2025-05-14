@@ -77,7 +77,7 @@ int test__update_mobility_with_get_fish(void)
         "Testing get_fish and mobility. `Fish0` should be started\n");
 
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 5,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 5000,
         "Testing get_fish and mobility. `Fish0` should not have reached its goal, duration 5sec.\n");
 
     struct vec2 vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[0], aqua));
@@ -91,7 +91,7 @@ int test__update_mobility_with_get_fish(void)
         "Testing get_fish and mobility. `Fish1` should be started\n");
 
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 10,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 10000,
         "Testing get_fish and mobility. `Fish1` should not have reached its goal, duration 10sec.\n");
 
     vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[1], aqua));
@@ -137,7 +137,7 @@ int test__update_mobility_with_get_fish(void)
         "testing get_fish and mobility. `fish0` should have reached its goal, current pos: (100, 100), after 5seconds.\n");
 
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 10,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 10000,
         "Testing get_fish and mobility. `Fish0` should have reached its goal, new duration: 10sec, after 5seconds.\n");
 
     vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[0], aqua));
@@ -147,7 +147,7 @@ int test__update_mobility_with_get_fish(void)
 
     // `Fish1`.
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 10,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 10000,
         "Testing get_fish and mobility. `Fish1` should not have reached its goal, duration 10sec, after 5seconds.\n");
 
     vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[1], aqua));
@@ -160,7 +160,7 @@ int test__update_mobility_with_get_fish(void)
 
     // `Fish0`.
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 10,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[0], aqua)) <= 10000,
         "Testing get_fish and mobility. `Fish0` should not have reached its goal, 10sec, after 10seconds.\n");
 
     vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[0], aqua));
@@ -175,7 +175,7 @@ int test__update_mobility_with_get_fish(void)
         "testing get_fish and mobility. `fish1` should have reached its goal, current pos: (0, 0), after 10seconds.\n");
 
     local_ret |= myassert(
-        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 5,
+        fish__get_move_duration(*aqua__get_fish(array_name_fishes[1], aqua)) <= 5000,
         "Testing get_fish and mobility. `Fish1` should have reached its goal, new duration: 5sec, after 10seconds.\n");
 
     vec_target = fish__get_target_pos(*aqua__get_fish(array_name_fishes[1], aqua));

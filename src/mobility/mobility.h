@@ -41,7 +41,7 @@ struct mobility_t {
     time_t last_timestamp;
 
     // the next pos to move.
-    int duration_to_move; // Time in seconds.
+    int duration_to_move; // Time in milliseconds.
     struct vec2 next_coordinates;
 };
 
