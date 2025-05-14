@@ -98,7 +98,8 @@ init_mobility(const char* name, const struct vec2 init_pos)
 
 int random_way_point_duration(const struct mobility_t mob)
 {
-    return 5000;
+    srand(mobility_get_timestamp() + mob.duration_to_move);
+    return 2000 + rand() % 5000;
 }
 
 struct vec2 random_way_point_target_pos(const struct mobility_t mob)
